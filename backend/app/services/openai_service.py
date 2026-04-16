@@ -6,8 +6,11 @@ from app.config import get_settings
 class OpenAIService:
     def __init__(self) -> None:
         settings = get_settings()
-        self.model = settings.openai_model
-        self.client = OpenAI(api_key=settings.openai_api_key)
+        self.model = settings.llm_model
+        self.client = OpenAI(
+            api_key=settings.llm_api_key,
+            base_url=settings.llm_base_url,
+        )
 
     def generate_reply(self, user_message: str, role: str) -> str:
         system_prompt = f"""
@@ -30,12 +33,14 @@ Rules:
 - Stay within the asset intelligence domain.
 """
 
-        response = self.client.responses.create(
+        completion = self.client.chat.completions.create(
             model=self.model,
-            input=[
-                {"role": "system", "content": system_prompt},
+            messages=[
+                {"role": "system", "content": system_prompt.strip()},
                 {"role": "user", "content": user_message},
             ],
+            temperature=0.2,
         )
 
-        return response.output_text.strip()
+        content = completion.choices[0].message.content
+        return content.strip() if content else "No response returned by the model."

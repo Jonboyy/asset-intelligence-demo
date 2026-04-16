@@ -19,8 +19,10 @@ class Settings(BaseSettings):
     postgres_password: str = Field(alias="POSTGRES_PASSWORD")
     postgres_port: int = Field(alias="POSTGRES_PORT")
 
-    openai_api_key: str = Field(alias="OPENAI_API_KEY")
-    openai_model: str = Field(default="gpt-5.4", alias="OPENAI_MODEL")
+    llm_provider: str = Field(default="openrouter", alias="LLM_PROVIDER")
+    llm_api_key: str = Field(alias="LLM_API_KEY")
+    llm_model: str = Field(default="openrouter/free", alias="LLM_MODEL")
+    llm_base_url: str = Field(default="https://openrouter.ai/api/v1", alias="LLM_BASE_URL")
 
     model_config = SettingsConfigDict(
         env_file=ROOT_DIR / ".env",
