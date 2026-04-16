@@ -1,0 +1,5 @@
+fastapi[standard]
+openai
+pydantic-settings
+psycopg[binary]
+sqlalchemy
