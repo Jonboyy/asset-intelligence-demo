@@ -1,0 +1,287 @@
+TRUNCATE TABLE
+    license_assignments,
+    software_licenses,
+    maintenance_records,
+    asset_assignments,
+    assets,
+    employees,
+    asset_categories,
+    vendors,
+    departments,
+    offices
+RESTART IDENTITY CASCADE;
+
+INSERT INTO offices (id, name, city, country, region) VALUES
+    (1, 'Budapest HQ', 'Budapest', 'Hungary', 'Central Europe'),
+    (2, 'Munich Engineering Center', 'Munich', 'Germany', 'Western Europe'),
+    (3, 'Prague Operations Hub', 'Prague', 'Czech Republic', 'Central Europe'),
+    (4, 'Warsaw Shared Services', 'Warsaw', 'Poland', 'Central Europe'),
+    (5, 'Barcelona Sales Office', 'Barcelona', 'Spain', 'Southern Europe');
+
+INSERT INTO departments (id, name, cost_center) VALUES
+    (1, 'IT Operations', 'CC-IT-001'),
+    (2, 'Engineering', 'CC-ENG-001'),
+    (3, 'Procurement', 'CC-PROC-001'),
+    (4, 'Finance', 'CC-FIN-001'),
+    (5, 'HR', 'CC-HR-001'),
+    (6, 'Manufacturing Systems', 'CC-MFG-001');
+
+INSERT INTO vendors (id, name, vendor_type, country, support_level) VALUES
+    (1, 'Lenovo', 'hardware', 'China', 'global'),
+    (2, 'Dell', 'hardware', 'United States', 'premium'),
+    (3, 'HP', 'hardware', 'United States', 'standard'),
+    (4, 'Cisco', 'hardware', 'United States', 'enterprise'),
+    (5, 'Microsoft', 'software', 'United States', 'enterprise'),
+    (6, 'Atlassian', 'software', 'Australia', 'standard'),
+    (7, 'Adobe', 'software', 'United States', 'standard'),
+    (8, 'SAP', 'software', 'Germany', 'enterprise'),
+    (9, 'Siemens Field Support', 'service', 'Germany', 'premium'),
+    (10, 'TechCare Europe', 'service', 'Poland', 'standard');
+
+INSERT INTO asset_categories (id, name, refresh_cycle_months, requires_serial) VALUES
+    (1, 'Laptop', 48, true),
+    (2, 'Desktop', 60, true),
+    (3, 'Phone', 36, true),
+    (4, 'Monitor', 72, true),
+    (5, 'Printer', 72, true),
+    (6, 'Network Equipment', 84, true),
+    (7, 'Industrial Scanner', 60, true);
+
+INSERT INTO employees (
+    id,
+    employee_code,
+    full_name,
+    email,
+    job_title,
+    department_id,
+    office_id,
+    employment_status,
+    hire_date,
+    termination_date,
+    manager_name
+) VALUES
+    (1, 'E1001', 'Anna Kovacs', 'anna.kovacs@nordaxis.com', 'IT Operations Manager', 1, 1, 'active', '2021-03-15', NULL, 'Markus Steiner'),
+    (2, 'E1002', 'Peter Nagy', 'peter.nagy@nordaxis.com', 'Systems Administrator', 1, 1, 'active', '2022-01-10', NULL, 'Anna Kovacs'),
+    (3, 'E1003', 'Luca Horvath', 'luca.horvath@nordaxis.com', 'Asset Manager', 1, 1, 'active', '2023-05-08', NULL, 'Anna Kovacs'),
+    (4, 'E1004', 'Markus Steiner', 'markus.steiner@nordaxis.com', 'Director of IT', 1, 2, 'active', '2019-09-01', NULL, 'Elena Rossi'),
+    (5, 'E1005', 'Julia Weber', 'julia.weber@nordaxis.com', 'Senior Mechanical Engineer', 2, 2, 'active', '2020-02-17', NULL, 'Thomas Berger'),
+    (6, 'E1006', 'Thomas Berger', 'thomas.berger@nordaxis.com', 'Head of Engineering', 2, 2, 'active', '2018-11-12', NULL, 'Elena Rossi'),
+    (7, 'E1007', 'Marek Novak', 'marek.novak@nordaxis.com', 'Operations Analyst', 1, 3, 'active', '2022-06-01', NULL, 'Anna Kovacs'),
+    (8, 'E1008', 'Eva Cerny', 'eva.cerny@nordaxis.com', 'Procurement Specialist', 3, 3, 'active', '2021-08-22', NULL, 'Katarina Voss'),
+    (9, 'E1009', 'Katarina Voss', 'katarina.voss@nordaxis.com', 'Procurement Manager', 3, 4, 'active', '2019-04-04', NULL, 'Elena Rossi'),
+    (10, 'E1010', 'Piotr Zielinski', 'piotr.zielinski@nordaxis.com', 'Finance Analyst', 4, 4, 'active', '2023-02-14', NULL, 'Daniel Nowak'),
+    (11, 'E1011', 'Daniel Nowak', 'daniel.nowak@nordaxis.com', 'Finance Manager', 4, 4, 'active', '2020-01-20', NULL, 'Elena Rossi'),
+    (12, 'E1012', 'Sofia Martinez', 'sofia.martinez@nordaxis.com', 'HR Business Partner', 5, 5, 'active', '2022-09-05', NULL, 'Elena Rossi'),
+    (13, 'E1013', 'Carlos Ruiz', 'carlos.ruiz@nordaxis.com', 'Regional Sales Lead', 4, 5, 'active', '2021-07-11', NULL, 'Elena Rossi'),
+    (14, 'E1014', 'Jan Dvorak', 'jan.dvorak@nordaxis.com', 'Manufacturing Systems Specialist', 6, 3, 'active', '2020-10-18', NULL, 'Thomas Berger'),
+    (15, 'E1015', 'Nina Fischer', 'nina.fischer@nordaxis.com', 'Engineering Project Manager', 2, 2, 'active', '2021-12-01', NULL, 'Thomas Berger'),
+    (16, 'E1016', 'Adam Lewandowski', 'adam.lewandowski@nordaxis.com', 'Shared Services Coordinator', 5, 4, 'active', '2023-07-03', NULL, 'Sofia Martinez'),
+    (17, 'E1017', 'Laura Schmidt', 'laura.schmidt@nordaxis.com', 'Design Engineer', 2, 2, 'leave', '2022-03-07', NULL, 'Thomas Berger'),
+    (18, 'E1018', 'Bence Toth', 'bence.toth@nordaxis.com', 'Desktop Support Technician', 1, 1, 'terminated', '2021-06-14', '2026-01-31', 'Anna Kovacs'),
+    (19, 'E1019', 'Milan Prochazka', 'milan.prochazka@nordaxis.com', 'Operations Coordinator', 1, 3, 'terminated', '2020-05-09', '2025-12-15', 'Anna Kovacs'),
+    (20, 'E1020', 'Elena Rossi', 'elena.rossi@nordaxis.com', 'VP Corporate Operations', 4, 2, 'active', '2017-02-01', NULL, NULL);
+
+INSERT INTO assets (
+    id,
+    asset_tag,
+    serial_number,
+    category_id,
+    manufacturer,
+    model,
+    purchase_date,
+    purchase_price,
+    warranty_end_date,
+    vendor_id,
+    office_id,
+    status,
+    condition,
+    notes
+) VALUES
+    (1, 'NMG-LT-0001', 'LNV-AX1-0001', 1, 'Lenovo', 'ThinkPad T14 Gen 2', '2022-02-15', 1450.00, '2025-02-15', 1, 1, 'in_use', 'good', NULL),
+    (2, 'NMG-LT-0002', 'LNV-AX1-0002', 1, 'Lenovo', 'ThinkPad T14 Gen 2', '2021-11-10', 1420.00, '2024-11-10', 1, 1, 'in_use', 'fair', 'Battery drains faster than expected'),
+    (3, 'NMG-LT-0003', 'DLL-MUC-0101', 1, 'Dell', 'Latitude 7420', '2022-07-05', 1580.00, '2025-07-05', 2, 2, 'in_use', 'good', NULL),
+    (4, 'NMG-LT-0004', 'DLL-MUC-0102', 1, 'Dell', 'Latitude 7420', '2021-06-20', 1550.00, '2024-06-20', 2, 2, 'in_use', 'fair', 'Frequent fan noise'),
+    (5, 'NMG-LT-0005', 'HP-PRG-0201', 1, 'HP', 'EliteBook 840 G8', '2023-01-15', 1390.00, '2026-01-15', 3, 3, 'in_use', 'excellent', NULL),
+    (6, 'NMG-LT-0006', 'HP-PRG-0202', 1, 'HP', 'EliteBook 840 G8', '2020-09-01', 1360.00, '2023-09-01', 3, 3, 'in_storage', 'fair', 'Spare laptop in storage'),
+    (7, 'NMG-LT-0007', 'LNV-WAW-0301', 1, 'Lenovo', 'ThinkPad X1 Carbon Gen 9', '2021-03-30', 1700.00, '2024-03-30', 1, 4, 'in_use', 'poor', 'Screen has pressure marks'),
+    (8, 'NMG-LT-0008', 'DLL-BCN-0401', 1, 'Dell', 'Latitude 7430', '2024-02-12', 1650.00, '2027-02-12', 2, 5, 'in_use', 'excellent', NULL),
+    (9, 'NMG-DT-0001', 'DLL-BUD-D001', 2, 'Dell', 'OptiPlex 7090', '2021-04-18', 1100.00, '2024-04-18', 2, 1, 'in_use', 'good', NULL),
+    (10, 'NMG-DT-0002', 'HP-WAW-D002', 2, 'HP', 'ProDesk 600 G6', '2020-02-10', 980.00, '2023-02-10', 3, 4, 'in_storage', 'fair', 'Old desktop kept for contingency'),
+    (11, 'NMG-PH-0001', 'APL-BUD-P001', 3, 'Apple', 'iPhone 13', '2023-05-10', 900.00, '2025-05-10', NULL, 1, 'in_use', 'good', NULL),
+    (12, 'NMG-PH-0002', 'SMS-MUC-P002', 3, 'Samsung', 'Galaxy S22', '2022-03-01', 780.00, '2024-03-01', NULL, 2, 'in_use', 'fair', NULL),
+    (13, 'NMG-MN-0001', 'DLL-BUD-M001', 4, 'Dell', 'P2422H', '2021-05-15', 240.00, '2024-05-15', 2, 1, 'in_use', 'good', NULL),
+    (14, 'NMG-MN-0002', 'HP-MUC-M002', 4, 'HP', 'E24 G4', '2020-08-09', 230.00, '2023-08-09', 3, 2, 'in_use', 'fair', NULL),
+    (15, 'NMG-MN-0003', 'DLL-PRG-M003', 4, 'Dell', 'P2422H', '2022-09-20', 245.00, '2025-09-20', 2, 3, 'in_storage', 'good', 'Unused spare monitor'),
+    (16, 'NMG-PR-0001', 'HP-BUD-PR01', 5, 'HP', 'LaserJet Pro M404dn', '2019-11-11', 420.00, '2022-11-11', 3, 1, 'under_repair', 'poor', 'Paper feed issue'),
+    (17, 'NMG-PR-0002', 'HP-WAW-PR02', 5, 'HP', 'Color LaserJet Pro', '2021-07-01', 560.00, '2024-07-01', 3, 4, 'in_use', 'good', NULL),
+    (18, 'NMG-NW-0001', 'CSC-BUD-NW01', 6, 'Cisco', 'Catalyst 9300', '2019-06-15', 4800.00, '2024-06-15', 4, 1, 'in_use', 'good', NULL),
+    (19, 'NMG-NW-0002', 'CSC-MUC-NW02', 6, 'Cisco', 'Meraki MX95', '2020-12-01', 5200.00, '2025-12-01', 4, 2, 'in_use', 'good', NULL),
+    (20, 'NMG-NW-0003', 'CSC-PRG-NW03', 6, 'Cisco', 'Catalyst 9200', '2018-10-10', 4300.00, '2023-10-10', 4, 3, 'in_use', 'fair', NULL),
+    (21, 'NMG-SC-0001', 'SCN-PRG-001', 7, 'Zebra', 'DS3608', '2021-01-25', 1250.00, '2024-01-25', NULL, 3, 'in_use', 'fair', 'Used in warehouse receiving'),
+    (22, 'NMG-SC-0002', 'SCN-PRG-002', 7, 'Zebra', 'DS3608', '2020-03-18', 1225.00, '2023-03-18', NULL, 3, 'under_repair', 'poor', 'Scan trigger intermittent'),
+    (23, 'NMG-LT-0009', NULL, 1, 'Lenovo', 'ThinkPad T14 Gen 3', '2024-06-10', 1520.00, '2027-06-10', 1, 1, 'in_storage', 'excellent', 'Missing serial in inventory import'),
+    (24, 'NMG-LT-0010', 'LNV-BUD-0010', 1, 'Lenovo', 'ThinkPad T14 Gen 3', NULL, 1500.00, '2027-05-01', 1, 1, 'in_storage', 'excellent', 'Missing purchase date for audit scenario'),
+    (25, 'NMG-LT-0011', 'DLL-MUC-0011', 1, 'Dell', 'Latitude 7440', '2024-01-12', 1680.00, NULL, 2, 2, 'in_use', 'excellent', 'Missing warranty end date for audit scenario'),
+    (26, 'NMG-LT-0012', 'HP-WAW-0012', 1, 'HP', 'EliteBook 840 G9', '2023-11-08', 1490.00, '2026-11-08', NULL, 4, 'in_use', 'good', 'Missing vendor for audit scenario'),
+    (27, 'NMG-LT-0013', 'LNV-PRG-0013', 1, 'Lenovo', 'ThinkPad T14 Gen 1', '2020-05-14', 1380.00, '2023-05-14', 1, 3, 'in_use', 'poor', 'Old device still assigned'),
+    (28, 'NMG-LT-0014', 'DLL-BUD-0014', 1, 'Dell', 'Latitude 7410', '2020-01-20', 1460.00, '2023-01-20', 2, 1, 'in_storage', 'fair', 'Idle asset over 90 days'),
+    (29, 'NMG-LT-0015', 'DLL-WAW-0015', 1, 'Dell', 'Latitude 7420', '2021-02-22', 1510.00, '2024-02-22', 2, 4, 'in_use', 'fair', 'Assigned to terminated employee'),
+    (30, 'NMG-DT-0003', 'HP-BUD-D003', 2, 'HP', 'EliteDesk 800 G5', '2019-09-17', 990.00, '2022-09-17', 3, 1, 'retired', 'poor', 'Retired last year'),
+    (31, 'NMG-LT-0016', 'LNV-BUD-0016', 1, 'Lenovo', 'ThinkPad T14 Gen 2', '2021-08-15', 1475.00, '2024-08-15', 1, 1, 'in_use', 'fair', 'Assigned to terminated employee'),
+    (32, 'NMG-MN-0004', 'DLL-BUD-M004', 4, 'Dell', 'P2722H', '2023-03-01', 280.00, '2026-03-01', 2, 1, 'in_use', 'excellent', NULL),
+    (33, 'NMG-PH-0003', 'APL-BCN-P003', 3, 'Apple', 'iPhone 14', '2024-04-01', 980.00, '2026-04-01', NULL, 5, 'in_use', 'excellent', NULL),
+    (34, 'NMG-SC-0003', 'SCN-PRG-003', 7, 'Zebra', 'DS3678', '2022-06-01', 1390.00, '2025-06-01', NULL, 3, 'in_use', 'good', NULL),
+    (35, 'NMG-NW-0004', 'CSC-WAW-NW04', 6, 'Cisco', 'Meraki MS225', '2021-09-09', 3900.00, '2026-09-09', 4, 4, 'in_use', 'good', NULL);
+
+INSERT INTO asset_assignments (
+    id,
+    asset_id,
+    employee_id,
+    assigned_at,
+    returned_at,
+    assignment_status
+) VALUES
+    (1, 1, 2, '2024-01-10', NULL, 'active'),
+    (2, 2, 3, '2024-04-01', NULL, 'active'),
+    (3, 3, 5, '2023-07-15', NULL, 'active'),
+    (4, 4, 15, '2023-10-01', NULL, 'active'),
+    (5, 5, 7, '2024-02-01', NULL, 'active'),
+    (6, 7, 10, '2023-01-15', NULL, 'active'),
+    (7, 8, 13, '2024-03-01', NULL, 'active'),
+    (8, 9, 2, '2022-11-01', NULL, 'active'),
+    (9, 11, 1, '2023-06-01', NULL, 'active'),
+    (10, 12, 6, '2022-03-10', NULL, 'active'),
+    (11, 13, 2, '2021-06-01', NULL, 'active'),
+    (12, 14, 5, '2021-01-10', NULL, 'active'),
+    (13, 17, 11, '2021-08-15', NULL, 'active'),
+    (14, 21, 14, '2021-02-01', NULL, 'active'),
+    (15, 25, 17, '2024-01-20', NULL, 'active'),
+    (16, 26, 9, '2024-02-05', NULL, 'active'),
+    (17, 27, 19, '2024-03-10', NULL, 'active'),
+    (18, 29, 18, '2024-04-15', NULL, 'active'),
+    (19, 31, 18, '2023-09-05', NULL, 'active'),
+    (20, 32, 1, '2023-03-15', NULL, 'active'),
+    (21, 33, 13, '2024-04-10', NULL, 'active'),
+    (22, 34, 14, '2022-06-10', NULL, 'active'),
+    (23, 35, 16, '2022-01-12', NULL, 'active'),
+    (24, 6, 7, '2021-02-01', '2024-01-15', 'returned'),
+    (25, 10, 16, '2023-08-10', '2025-10-15', 'returned');
+
+INSERT INTO maintenance_records (
+    id,
+    asset_id,
+    vendor_id,
+    service_date,
+    service_type,
+    issue_type,
+    cost,
+    downtime_days,
+    notes
+) VALUES
+    (1, 2, 10, '2025-06-12', 'battery_replacement', 'Battery health degraded', 180.00, 2, NULL),
+    (2, 2, 10, '2025-11-20', 'repair', 'Keyboard replacement', 220.00, 3, NULL),
+    (3, 4, 10, '2025-03-10', 'repair', 'Cooling fan replacement', 260.00, 2, NULL),
+    (4, 4, 10, '2025-09-18', 'repair', 'Motherboard diagnostics', 410.00, 4, NULL),
+    (5, 7, 10, '2025-08-22', 'screen_replacement', 'Display damage', 320.00, 5, NULL),
+    (6, 16, 9, '2025-02-14', 'repair', 'Paper feed jam', 140.00, 1, NULL),
+    (7, 16, 9, '2025-07-19', 'repair', 'Roller replacement', 210.00, 2, NULL),
+    (8, 20, 9, '2025-05-01', 'inspection', 'Firmware and port check', 150.00, 0, NULL),
+    (9, 22, 9, '2025-01-11', 'repair', 'Trigger switch issue', 95.00, 1, NULL),
+    (10, 22, 9, '2025-10-03', 'repair', 'Laser calibration', 115.00, 2, NULL),
+    (11, 18, 9, '2024-11-15', 'preventive_maintenance', 'Switch health check', 300.00, 0, NULL),
+    (12, 21, 10, '2025-04-22', 'repair', 'Scanner head cleaning', 85.00, 1, NULL),
+    (13, 27, 10, '2025-02-28', 'repair', 'Battery swelling', 190.00, 2, NULL),
+    (14, 27, 10, '2025-12-09', 'repair', 'Trackpad replacement', 175.00, 1, NULL),
+    (15, 29, 10, '2025-07-07', 'repair', 'Charging port replacement', 210.00, 2, NULL),
+    (16, 31, 10, '2025-03-30', 'repair', 'Thermal issue', 240.00, 3, NULL),
+    (17, 31, 10, '2025-11-02', 'repair', 'SSD replacement', 280.00, 2, NULL),
+    (18, 34, 9, '2025-06-18', 'preventive_maintenance', 'Calibration', 110.00, 0, NULL);
+
+INSERT INTO software_licenses (
+    id,
+    product_name,
+    vendor_id,
+    license_type,
+    total_seats,
+    annual_cost,
+    renewal_date,
+    is_active
+) VALUES
+    (1, 'Microsoft 365 E3', 5, 'subscription', 120, 28800.00, '2026-12-31', true),
+    (2, 'Jira Software', 6, 'subscription', 80, 12400.00, '2026-09-30', true),
+    (3, 'Confluence', 6, 'subscription', 90, 9600.00, '2026-09-30', true),
+    (4, 'Adobe Creative Cloud', 7, 'subscription', 25, 16250.00, '2026-08-15', true),
+    (5, 'SAP Analytics Cloud', 8, 'enterprise', 40, 38000.00, '2026-11-30', true),
+    (6, 'Visio Plan 2', 5, 'subscription', 30, 5400.00, '2026-07-31', true),
+    (7, 'Power BI Pro', 5, 'subscription', 100, 12000.00, '2026-10-31', true),
+    (8, 'AutoCAD', NULL, 'subscription', 20, 30000.00, '2026-06-30', true);
+
+INSERT INTO license_assignments (
+    id,
+    license_id,
+    employee_id,
+    assigned_at,
+    revoked_at,
+    assignment_status
+) VALUES
+    (1, 1, 1, '2024-01-01', NULL, 'active'),
+    (2, 1, 2, '2024-01-01', NULL, 'active'),
+    (3, 1, 3, '2024-01-01', NULL, 'active'),
+    (4, 1, 4, '2024-01-01', NULL, 'active'),
+    (5, 1, 5, '2024-01-01', NULL, 'active'),
+    (6, 1, 6, '2024-01-01', NULL, 'active'),
+    (7, 1, 7, '2024-01-01', NULL, 'active'),
+    (8, 1, 8, '2024-01-01', NULL, 'active'),
+    (9, 1, 9, '2024-01-01', NULL, 'active'),
+    (10, 1, 10, '2024-01-01', NULL, 'active'),
+    (11, 1, 11, '2024-01-01', NULL, 'active'),
+    (12, 1, 12, '2024-01-01', NULL, 'active'),
+    (13, 1, 13, '2024-01-01', NULL, 'active'),
+    (14, 1, 14, '2024-01-01', NULL, 'active'),
+    (15, 1, 15, '2024-01-01', NULL, 'active'),
+    (16, 1, 16, '2024-01-01', NULL, 'active'),
+    (17, 1, 17, '2024-01-01', NULL, 'active'),
+    (18, 1, 18, '2024-01-01', NULL, 'active'),
+    (19, 2, 1, '2024-01-15', NULL, 'active'),
+    (20, 2, 3, '2024-01-15', NULL, 'active'),
+    (21, 2, 5, '2024-01-15', NULL, 'active'),
+    (22, 2, 6, '2024-01-15', NULL, 'active'),
+    (23, 2, 15, '2024-01-15', NULL, 'active'),
+    (24, 3, 1, '2024-02-01', NULL, 'active'),
+    (25, 3, 2, '2024-02-01', NULL, 'active'),
+    (26, 3, 4, '2024-02-01', NULL, 'active'),
+    (27, 3, 8, '2024-02-01', NULL, 'active'),
+    (28, 3, 9, '2024-02-01', NULL, 'active'),
+    (29, 3, 10, '2024-02-01', NULL, 'active'),
+    (30, 3, 11, '2024-02-01', NULL, 'active'),
+    (31, 4, 13, '2024-03-01', NULL, 'active'),
+    (32, 4, 17, '2024-03-01', NULL, 'active'),
+    (33, 5, 10, '2024-01-20', NULL, 'active'),
+    (34, 5, 11, '2024-01-20', NULL, 'active'),
+    (35, 5, 20, '2024-01-20', NULL, 'active'),
+    (36, 6, 5, '2024-04-01', NULL, 'active'),
+    (37, 6, 15, '2024-04-01', NULL, 'active'),
+    (38, 7, 1, '2024-01-10', NULL, 'active'),
+    (39, 7, 3, '2024-01-10', NULL, 'active'),
+    (40, 7, 7, '2024-01-10', NULL, 'active'),
+    (41, 7, 8, '2024-01-10', NULL, 'active'),
+    (42, 7, 9, '2024-01-10', NULL, 'active'),
+    (43, 7, 10, '2024-01-10', NULL, 'active'),
+    (44, 7, 11, '2024-01-10', NULL, 'active'),
+    (45, 8, 5, '2024-05-01', NULL, 'active'),
+    (46, 8, 6, '2024-05-01', NULL, 'active'),
+    (47, 8, 15, '2024-05-01', NULL, 'active'),
+    (48, 2, 18, '2024-02-01', NULL, 'active'),
+    (49, 7, 18, '2024-02-01', NULL, 'active'),
+    (50, 3, 19, '2024-02-01', NULL, 'active');
+
+SELECT setval(pg_get_serial_sequence('offices', 'id'), COALESCE((SELECT MAX(id) FROM offices), 1), true);
+SELECT setval(pg_get_serial_sequence('departments', 'id'), COALESCE((SELECT MAX(id) FROM departments), 1), true);
+SELECT setval(pg_get_serial_sequence('vendors', 'id'), COALESCE((SELECT MAX(id) FROM vendors), 1), true);
+SELECT setval(pg_get_serial_sequence('asset_categories', 'id'), COALESCE((SELECT MAX(id) FROM asset_categories), 1), true);
+SELECT setval(pg_get_serial_sequence('employees', 'id'), COALESCE((SELECT MAX(id) FROM employees), 1), true);
+SELECT setval(pg_get_serial_sequence('assets', 'id'), COALESCE((SELECT MAX(id) FROM assets), 1), true);
+SELECT setval(pg_get_serial_sequence('asset_assignments', 'id'), COALESCE((SELECT MAX(id) FROM asset_assignments), 1), true);
+SELECT setval(pg_get_serial_sequence('maintenance_records', 'id'), COALESCE((SELECT MAX(id) FROM maintenance_records), 1), true);
+SELECT setval(pg_get_serial_sequence('software_licenses', 'id'), COALESCE((SELECT MAX(id) FROM software_licenses), 1), true);
+SELECT setval(pg_get_serial_sequence('license_assignments', 'id'), COALESCE((SELECT MAX(id) FROM license_assignments), 1), true);
