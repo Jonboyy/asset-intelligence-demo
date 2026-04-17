@@ -3,10 +3,21 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { Bot, Database, LayoutDashboard, ShieldCheck } from "lucide-react"
+import type { DemoUserRole } from "@/types/auth"
+import {
+  Bot,
+  Database,
+  LayoutDashboard,
+  LogOut,
+  ShieldCheck,
+} from "lucide-react"
 
 interface AppSidebarProps {
+  userName: string
+  userTitle: string
+  userRole: DemoUserRole
   onPromptSelect: (prompt: string) => void
+  onLogout: () => void
 }
 
 const demoPrompts = [
@@ -16,7 +27,26 @@ const demoPrompts = [
   "List laptop refresh candidates by office.",
 ]
 
-export function AppSidebar({ onPromptSelect }: AppSidebarProps) {
+function formatRole(role: DemoUserRole) {
+  switch (role) {
+    case "asset_manager":
+      return "asset_manager"
+    case "it_manager":
+      return "it_manager"
+    case "operations_manager":
+      return "operations_manager"
+    default:
+      return role
+  }
+}
+
+export function AppSidebar({
+  userName,
+  userTitle,
+  userRole,
+  onPromptSelect,
+  onLogout,
+}: AppSidebarProps) {
   return (
     <Card className="h-full border-slate-200/80 shadow-sm">
       <CardHeader className="space-y-3">
@@ -30,13 +60,22 @@ export function AppSidebar({ onPromptSelect }: AppSidebarProps) {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">Demo User</Badge>
-          <Badge variant="outline">Asset Manager</Badge>
+        <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-semibold text-slate-900">{userName}</p>
+          <p className="text-sm text-slate-600">{userTitle}</p>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">Demo User</Badge>
+            <Badge variant="outline">{formatRole(userRole)}</Badge>
+          </div>
         </div>
+
+        <Button type="button" variant="outline" onClick={onLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Sign out
+        </Button>
       </CardHeader>
 
-      <CardContent className="h-[calc(100%-6.5rem)] p-0">
+      <CardContent className="h-[calc(100%-13.5rem)] p-0">
         <ScrollArea className="h-full px-6 pb-6">
           <div className="space-y-6">
             <div className="space-y-3">
@@ -89,8 +128,8 @@ export function AppSidebar({ onPromptSelect }: AppSidebarProps) {
                 Scope
               </p>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-                This assistant is limited to asset lifecycle, assignments, maintenance,
-                warranties, license utilization, and related analytics.
+                This assistant is limited to asset lifecycle, assignments,
+                maintenance, warranties, license utilization, and related analytics.
               </div>
             </div>
           </div>

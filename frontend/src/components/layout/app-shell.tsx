@@ -1,9 +1,13 @@
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { ChatPanel } from "@/components/assistant/chat-panel"
 import { ResultsPanel } from "@/components/results/results-panel"
+import type { DemoUserRole } from "@/types/auth"
 import type { ChatMessage, ChatResponse } from "@/types/chat"
 
 interface AppShellProps {
+  userName: string
+  userTitle: string
+  userRole: DemoUserRole
   messages: ChatMessage[]
   input: string
   isLoading: boolean
@@ -11,9 +15,13 @@ interface AppShellProps {
   onInputChange: (value: string) => void
   onSubmit: () => void
   onPromptSelect: (prompt: string) => void
+  onLogout: () => void
 }
 
 export function AppShell({
+  userName,
+  userTitle,
+  userRole,
   messages,
   input,
   isLoading,
@@ -21,10 +29,17 @@ export function AppShell({
   onInputChange,
   onSubmit,
   onPromptSelect,
+  onLogout,
 }: AppShellProps) {
   return (
     <div className="grid min-h-svh gap-4 xl:grid-cols-[280px_minmax(0,1fr)_420px]">
-      <AppSidebar onPromptSelect={onPromptSelect} />
+      <AppSidebar
+        userName={userName}
+        userTitle={userTitle}
+        userRole={userRole}
+        onPromptSelect={onPromptSelect}
+        onLogout={onLogout}
+      />
       <ChatPanel
         messages={messages}
         input={input}

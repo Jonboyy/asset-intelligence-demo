@@ -1,78 +1,35 @@
-import { useState } from "react"
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 
-import { AppShell } from "@/components/layout/app-shell"
-import { sendChatMessage } from "@/lib/api"
-import type { ChatMessage, ChatResponse } from "@/types/chat"
+import { ProtectedRoute } from "@/components/layout/protected-route"
+import { getStoredSession } from "@/lib/auth"
+import { AssistantPage } from "@/pages/assistant-page"
+import { LoginPage } from "@/pages/login-page"
 
-const initialAssistantMessage =
-  "Hello — I can help with asset lifecycle, refresh candidates, maintenance, and related analytics. The strongest demo path right now is laptop refresh analysis."
+function AppRoutes() {
+  const hasSession = Boolean(getStoredSession())
 
-function createMessage(role: "user" | "assistant", content: string): ChatMessage {
-  return {
-    id: crypto.randomUUID(),
-    role,
-    content,
-  }
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route path="/assistant" element={<AssistantPage />} />
+      </Route>
+
+      <Route
+        path="*"
+        element={
+          <Navigate to={hasSession ? "/assistant" : "/login"} replace />
+        }
+      />
+    </Routes>
+  )
 }
 
 export default function App() {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    createMessage("assistant", initialAssistantMessage),
-  ])
-  const [input, setInput] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [latestResult, setLatestResult] = useState<ChatResponse | null>(null)
-
-  async function handleSendMessage(messageOverride?: string) {
-    const nextMessage = (messageOverride ?? input).trim()
-    if (!nextMessage || isLoading) return
-
-    const userMessage = createMessage("user", nextMessage)
-
-    setMessages((current) => [...current, userMessage])
-    setInput("")
-    setIsLoading(true)
-
-    try {
-      const response = await sendChatMessage({
-        message: nextMessage,
-        role: "asset_manager",
-      })
-
-      setLatestResult(response)
-      setMessages((current) => [
-        ...current,
-        createMessage("assistant", response.reply),
-      ])
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Something went wrong."
-
-      setMessages((current) => [
-        ...current,
-        createMessage(
-          "assistant",
-          `The request failed.\n\n${errorMessage}`
-        ),
-      ])
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return (
-    <main className="min-h-svh bg-slate-100 px-4 py-4 text-slate-950 md:px-6 md:py-6">
-      <div className="mx-auto max-w-[1600px]">
-        <AppShell
-          messages={messages}
-          input={input}
-          isLoading={isLoading}
-          latestResult={latestResult}
-          onInputChange={setInput}
-          onSubmit={() => void handleSendMessage()}
-          onPromptSelect={(prompt) => void handleSendMessage(prompt)}
-        />
-      </div>
-    </main>
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
   )
 }
