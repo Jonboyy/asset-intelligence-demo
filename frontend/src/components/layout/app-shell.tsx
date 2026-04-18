@@ -32,7 +32,7 @@ export function AppShell({
   onLogout,
 }: AppShellProps) {
   return (
-    <div className="grid min-h-svh gap-4 xl:grid-cols-[280px_minmax(0,1fr)_420px]">
+    <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_500px]">
       <AppSidebar
         userName={userName}
         userTitle={userTitle}

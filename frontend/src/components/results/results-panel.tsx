@@ -8,6 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { RefreshByOfficeChart } from "@/components/results/refresh-by-office-chart"
+import { RefreshTimingChart } from "@/components/results/refresh-timing-chart"
+import { ResultSummaryCards } from "@/components/results/result-summary-cards"
 import type { ChatResponse } from "@/types/chat"
 
 interface ResultsPanelProps {
@@ -30,7 +33,7 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
   const rows = result?.data?.results ?? []
 
   return (
-    <Card className="h-full border-slate-200/80 shadow-sm">
+    <Card className="flex h-full min-h-0 flex-col border-slate-200/80 shadow-sm">
       <CardHeader className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-base">Results</CardTitle>
@@ -39,35 +42,34 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
             <Badge variant="outline">{result?.task ?? "no-task"}</Badge>
           </div>
         </div>
+
         <p className="text-sm text-slate-500">
           Structured result payload returned by the backend.
         </p>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="min-h-0 flex-1 space-y-4 overflow-y-auto">
         {result?.data ? (
           <>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Metric
-                </p>
-                <p className="mt-2 text-sm font-medium text-slate-900">
-                  {result.data.metric}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Total candidates
-                </p>
-                <p className="mt-2 text-sm font-medium text-slate-900">
-                  {result.data.total_candidates}
-                </p>
-              </div>
+            <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Summary
+              </p>
+              <p className="mt-2 whitespace-normal text-sm leading-6 text-slate-700 [hyphens:auto]">
+                Found <span className="font-semibold text-slate-900">{result.data.total_candidates}</span>{" "}
+                laptop refresh candidates within the next{" "}
+                <span className="font-semibold text-slate-900">{result.data.days_ahead}</span> days.
+              </p>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
+            <ResultSummaryCards data={result.data} />
+
+            <div className="grid grid-cols-1 gap-4">
+              <RefreshByOfficeChart data={result.data} />
+              <RefreshTimingChart data={result.data} />
+            </div>
+
+            <div className="overflow-x-auto rounded-2xl border border-slate-200">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -78,6 +80,7 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
                     <TableHead>Refresh Due</TableHead>
                     <TableHead>Timing</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Condition</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -92,6 +95,7 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
                       <TableCell>{formatDate(row.refresh_due_date)}</TableCell>
                       <TableCell>{formatDays(row.days_until_refresh)}</TableCell>
                       <TableCell>{row.status}</TableCell>
+                      <TableCell>{row.condition}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -100,7 +104,10 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
           </>
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm leading-6 text-slate-500">
-            No structured result yet. Try a refresh-related prompt from the sidebar.
+            No structured result yet. Try one of the refresh-related prompts from the sidebar, such as:
+            <div className="mt-3 rounded-xl bg-white p-3 text-slate-700">
+              “Which laptops are likely due for refresh soon?”
+            </div>
           </div>
         )}
       </CardContent>

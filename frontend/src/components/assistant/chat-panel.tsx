@@ -29,7 +29,7 @@ export function ChatPanel({
   }
 
   return (
-    <Card className="h-full border-slate-200/80 shadow-sm">
+    <Card className="flex h-full min-h-0 flex-col border-slate-200/80 shadow-sm">
       <CardHeader className="space-y-3">
         <div className="flex items-center justify-between gap-4">
           <CardTitle className="text-base">Assistant</CardTitle>
@@ -41,7 +41,7 @@ export function ChatPanel({
         </p>
       </CardHeader>
 
-      <CardContent className="flex h-[calc(100%-6.5rem)] flex-col gap-4">
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-4">
         <ScrollArea className="min-h-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="space-y-4 pr-3">
             {messages.map((message) => {
@@ -67,7 +67,7 @@ export function ChatPanel({
                         : "bg-slate-900 text-white"
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    <p className="whitespace-pre-wrap break-words">{message.content}</p>
                   </div>
 
                   {!isAssistant && (

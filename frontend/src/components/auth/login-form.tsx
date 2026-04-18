@@ -25,7 +25,7 @@ export function LoginForm({
       <Card className="border-slate-200/80 shadow-sm">
         <CardHeader className="space-y-4">
           <div className="space-y-2">
-            <Badge variant="secondary">Demo</Badge>
+            <Badge variant="secondary">Hiring Demo</Badge>
             <CardTitle className="text-2xl">Asset Intelligence Assistant</CardTitle>
             <p className="max-w-2xl text-sm leading-6 text-slate-600">
               An internal analytics assistant for asset lifecycle, maintenance,
@@ -44,11 +44,13 @@ export function LoginForm({
                   setEmail(user.email)
                   setPassword(user.password)
                 }}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-slate-300 hover:bg-white"
+                className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-slate-300 hover:bg-white"
               >
                 <p className="text-sm font-semibold text-slate-900">{user.title}</p>
                 <p className="mt-1 text-sm text-slate-600">{user.name}</p>
-                <p className="mt-3 text-xs text-slate-500">{user.email}</p>
+                <p className="mt-3 overflow-hidden text-[11px] leading-4 text-slate-500 [overflow-wrap:anywhere]">
+                  {user.email}
+                </p>
               </button>
             ))}
           </div>
