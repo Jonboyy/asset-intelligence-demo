@@ -15,7 +15,10 @@ class ChatService:
     def handle_message(self, user_message: str, role: str, db: Session) -> dict:
         if self._is_refresh_candidates_request(user_message):
             days_ahead = self._extract_days_ahead(user_message)
-            data = self.analytics_service.get_refresh_candidates(db=db, days_ahead=days_ahead)
+            data = self.analytics_service.get_refresh_candidates(
+                db=db,
+                days_ahead=days_ahead,
+            )
             reply = self._build_refresh_reply(data)
 
             return {
@@ -27,6 +30,7 @@ class ChatService:
             }
 
         reply = self.llm_service.generate_reply(user_message=user_message, role=role)
+
         return {
             "reply": reply,
             "model": self.llm_service.model,
@@ -78,40 +82,48 @@ class ChatService:
 
         if total == 0:
             return (
-                f"I checked the database and found no laptops due for refresh "
-                f"within the next {days_ahead} days."
+                "Database check complete.\n\n"
+                f"No laptop refresh candidates were found within the next {days_ahead} days.\n\n"
+                "The Results panel has been updated with the structured response."
             )
 
         office_counts = Counter(row["office_name"] for row in results)
         office_summary = ", ".join(
             f"{office}: {count}"
-            for office, count in sorted(office_counts.items(), key=lambda item: (-item[1], item[0]))
+            for office, count in sorted(
+                office_counts.items(),
+                key=lambda item: (-item[1], item[0]),
+            )
         )
 
-        sample_lines: list[str] = []
-        for row in results[:5]:
-            days_until = row["days_until_refresh"]
+        overdue_count = sum(
+            1
+            for row in results
+            if row["days_until_refresh"] is not None and row["days_until_refresh"] < 0
+        )
 
-            if days_until is None:
-                timing_text = "refresh timing unavailable"
-            elif days_until < 0:
-                timing_text = f"overdue by {abs(days_until)} days"
-            elif days_until == 0:
-                timing_text = "due today"
+        most_urgent_values = [
+            row["days_until_refresh"]
+            for row in results
+            if row["days_until_refresh"] is not None
+        ]
+
+        if most_urgent_values:
+            most_urgent = min(most_urgent_values)
+            if most_urgent < 0:
+                urgency_text = f"The most urgent device is overdue by {abs(most_urgent)} days."
+            elif most_urgent == 0:
+                urgency_text = "The most urgent device is due today."
             else:
-                timing_text = f"due in {days_until} days"
-
-            sample_lines.append(
-                f"- {row['asset_tag']} ({row['manufacturer']} {row['model']}, {row['office_name']}, {timing_text})"
-            )
-
-        sample_block = "\n".join(sample_lines)
+                urgency_text = f"The most urgent device is due in {most_urgent} days."
+        else:
+            urgency_text = "Urgency timing is unavailable for these results."
 
         return (
-            f"I checked the database and found {total} laptop refresh candidates due within the next "
-            f"{days_ahead} days.\n\n"
-            f"By office: {office_summary}.\n\n"
-            f"Top examples:\n"
-            f"{sample_block}\n\n"
-            f"The full result set is included in the response payload under `data.results`."
+            "Database check complete.\n\n"
+            f"I found {total} laptop refresh candidates within the next {days_ahead} days.\n\n"
+            f"Office impact: {office_summary}.\n\n"
+            f"Urgency: {overdue_count} candidate{'s' if overdue_count != 1 else ''} already overdue. "
+            f"{urgency_text}\n\n"
+            "The full list is shown in the Results panel, including summary cards, charts, and the detailed table."
         )
