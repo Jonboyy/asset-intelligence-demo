@@ -6,6 +6,16 @@ export interface ChatMessage {
   content: string
 }
 
+export interface DecisionTrace {
+  intent: string | null
+  confidence: number | null
+  reason: string | null
+  selected_task: string | null
+  mode: string
+  model: string
+  structured_data_returned: boolean
+}
+
 export interface RefreshCandidateRow {
   office_name: string
   asset_tag: string
@@ -107,4 +117,5 @@ export interface ChatResponse {
   mode: string
   task: string | null
   data: AnalyticsData | null
+  trace: DecisionTrace | null
 }

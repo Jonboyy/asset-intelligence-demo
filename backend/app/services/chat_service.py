@@ -31,6 +31,12 @@ class ChatService:
                 "mode": "analytics",
                 "task": "refresh_candidates",
                 "data": data,
+                "trace": self._build_trace(
+                    classification=classification,
+                    mode="analytics",
+                    task="refresh_candidates",
+                    structured_data_returned=True,
+                ),
             }
 
         if intent == "offboarding_risk":
@@ -43,6 +49,7 @@ class ChatService:
                 "mode": "analytics",
                 "task": "offboarding_risk",
                 "data": data,
+                "trace": self._build_trace(classification, "analytics", "offboarding_risk", True)
             }
 
         if intent == "data_quality_audit":
@@ -55,6 +62,7 @@ class ChatService:
                 "mode": "analytics",
                 "task": "data_quality_audit",
                 "data": data,
+                "trace": self._build_trace(classification, "analytics", "data_quality_audit", True)
             }
 
         if intent == "license_utilization":
@@ -67,6 +75,7 @@ class ChatService:
                 "mode": "analytics",
                 "task": "license_utilization",
                 "data": data,
+                "trace": self._build_trace(classification, "analytics", "license_utilization", True)
             }
 
         if intent == "clarification_needed":
@@ -85,6 +94,7 @@ class ChatService:
                 "mode": "clarification",
                 "task": "clarification_needed",
                 "data": None,
+                "trace": self._build_trace(classification, "clarification", "clarification_needed", False)
             }
 
         if intent == "unsupported":
@@ -99,6 +109,7 @@ class ChatService:
                 "mode": "unsupported",
                 "task": "unsupported",
                 "data": None,
+                "trace": self._build_trace(classification, "unsupported", "unsupported", False)
             }
 
         if intent == "out_of_scope":
@@ -111,6 +122,7 @@ class ChatService:
                 "mode": "out_of_scope",
                 "task": "out_of_scope",
                 "data": None,
+                "trace": self._build_trace(classification, "out_of_scope", "out_of_scope", False)
             }
 
         reply = self.llm_service.generate_reply(user_message=user_message, role=role)
@@ -121,6 +133,15 @@ class ChatService:
             "mode": "llm",
             "task": None,
             "data": None,
+            "trace": {
+                "intent": None,
+                "confidence": None,
+                "reason": "Fallback LLM response without structured analytics routing.",
+                "selected_task": None,
+                "mode": "llm",
+                "model": self.llm_service.model,
+                "structured_data_returned": False,
+            },
         }
 
     def _classify_or_fallback(self, user_message: str, role: str) -> dict[str, Any]:
@@ -132,48 +153,61 @@ class ChatService:
 
             if classification["confidence"] >= 0.55:
                 return classification
-        except Exception:
-            pass
+
+            print(
+                f"Intent classifier confidence too low: {classification}",
+                flush=True,
+            )
+        except Exception as exc:
+            print(
+                f"Intent classifier failed: {exc}",
+                flush=True,
+            )
 
         return self._heuristic_classification(user_message)
 
     def _heuristic_classification(self, user_message: str) -> dict[str, Any]:
+        fallback_reason = (
+            "AI classifier was unavailable or returned invalid JSON. "
+            "Used deterministic fallback routing."
+        )
+
         if self._is_refresh_candidates_request(user_message):
             return {
                 "intent": "refresh_candidates",
-                "confidence": 0.7,
-                "reason": "Fallback routing matched laptop/device refresh terms.",
+                "confidence": None,
+                "reason": fallback_reason,
                 "clarifying_question": None,
             }
 
         if self._is_offboarding_risk_request(user_message):
             return {
                 "intent": "offboarding_risk",
-                "confidence": 0.7,
-                "reason": "Fallback routing matched offboarding and assignment terms.",
+                "confidence": None,
+                "reason": fallback_reason,
                 "clarifying_question": None,
             }
 
         if self._is_data_quality_request(user_message):
             return {
                 "intent": "data_quality_audit",
-                "confidence": 0.7,
-                "reason": "Fallback routing matched data quality terms.",
+                "confidence": None,
+                "reason": fallback_reason,
                 "clarifying_question": None,
             }
 
         if self._is_license_utilization_request(user_message):
             return {
                 "intent": "license_utilization",
-                "confidence": 0.7,
-                "reason": "Fallback routing matched software license utilization terms.",
+                "confidence": None,
+                "reason": fallback_reason,
                 "clarifying_question": None,
             }
 
         return {
             "intent": "clarification_needed",
-            "confidence": 0.5,
-            "reason": "Fallback routing could not confidently select a task.",
+            "confidence": None,
+            "reason": fallback_reason,
             "clarifying_question": (
                 "Do you want to analyze refresh candidates, offboarding risk, data quality, "
                 "or software license utilization?"
@@ -313,6 +347,23 @@ class ChatService:
 
     def _classification_note(self, classification: dict[str, Any]) -> str:
         return ""
+    
+    def _build_trace(
+        self,
+        classification: dict[str, Any],
+        mode: str,
+        task: str | None,
+        structured_data_returned: bool,
+    ) -> dict[str, Any]:
+        return {
+            "intent": classification.get("intent"),
+            "confidence": classification.get("confidence"),
+            "reason": classification.get("reason"),
+            "selected_task": task,
+            "mode": mode,
+            "model": self.llm_service.model,
+            "structured_data_returned": structured_data_returned,
+        }
 
     def _build_refresh_reply(self, data: dict, classification: dict[str, Any]) -> str:
         total = data["total_candidates"]

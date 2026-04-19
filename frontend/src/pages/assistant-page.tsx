@@ -27,6 +27,7 @@ export function AssistantPage() {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [latestResult, setLatestResult] = useState<ChatResponse | null>(null)
+  const [isTraceOpen, setIsTraceOpen] = useState(false)
 
   if (!session) {
     return <Navigate to="/login" replace />
@@ -84,10 +85,12 @@ export function AssistantPage() {
           input={input}
           isLoading={isLoading}
           latestResult={latestResult}
+          isTraceOpen={isTraceOpen}
           onInputChange={setInput}
           onSubmit={() => void handleSendMessage()}
           onPromptSelect={(prompt) => void handleSendMessage(prompt)}
           onLogout={handleLogout}
+          onToggleTrace={() => setIsTraceOpen((current) => !current)}
         />
       </div>
     </main>
