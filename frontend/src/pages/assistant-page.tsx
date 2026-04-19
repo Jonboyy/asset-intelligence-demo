@@ -56,13 +56,19 @@ export function AssistantPage() {
         ...current,
         createMessage("assistant", response.reply),
       ])
-    } catch (error) {
+        } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Something went wrong."
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while processing the request."
 
+      setLatestResult(null)
       setMessages((current) => [
         ...current,
-        createMessage("assistant", `The request failed.\n\n${errorMessage}`),
+        createMessage(
+          "assistant",
+          `I couldn't complete the request.\n\n${errorMessage}`,
+        ),
       ])
     } finally {
       setIsLoading(false)

@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -10,6 +12,8 @@ from app.schemas.analytics import (
     RefreshCandidatesResponse,
 )
 from app.services.analytics_service import AnalyticsService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
@@ -24,9 +28,10 @@ def get_refresh_candidates(
         result = service.get_refresh_candidates(db=db, days_ahead=request.days_ahead)
         return RefreshCandidatesResponse(**result)
     except Exception as exc:
+        logger.exception("Refresh candidates request failed")
         raise HTTPException(
             status_code=500,
-            detail=f"Analytics request failed: {exc}",
+            detail="Refresh candidates request failed. Please check the backend logs.",
         ) from exc
 
 
@@ -39,9 +44,10 @@ def get_offboarding_risk(
         result = service.get_offboarding_risk(db=db)
         return OffboardingRiskResponse(**result)
     except Exception as exc:
+        logger.exception("Offboarding risk request failed")
         raise HTTPException(
             status_code=500,
-            detail=f"Offboarding risk request failed: {exc}",
+            detail="Offboarding risk request failed. Please check the backend logs.",
         ) from exc
 
 
@@ -54,9 +60,10 @@ def get_data_quality_audit(
         result = service.get_data_quality_audit(db=db)
         return DataQualityAuditResponse(**result)
     except Exception as exc:
+        logger.exception("Data quality audit request failed")
         raise HTTPException(
             status_code=500,
-            detail=f"Data quality audit request failed: {exc}",
+            detail="Data quality audit request failed. Please check the backend logs.",
         ) from exc
 
 
@@ -69,7 +76,8 @@ def get_license_utilization(
         result = service.get_license_utilization(db=db)
         return LicenseUtilizationResponse(**result)
     except Exception as exc:
+        logger.exception("License utilization request failed")
         raise HTTPException(
             status_code=500,
-            detail=f"License utilization request failed: {exc}",
+            detail="License utilization request failed. Please check the backend logs.",
         ) from exc
