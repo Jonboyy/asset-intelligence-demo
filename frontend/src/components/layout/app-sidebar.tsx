@@ -23,8 +23,9 @@ interface AppSidebarProps {
 const demoPrompts = [
   "Which laptops are likely due for refresh soon?",
   "Show refresh candidates due within the next 180 days.",
-  "Which laptops need replacement in the next 6 months?",
-  "List laptop refresh candidates by office.",
+  "Which terminated employees still have assigned devices or active software licenses?",
+  "Show offboarding risk.",
+  "Find former employees with active licenses.",
 ]
 
 function formatRole(role: DemoUserRole) {

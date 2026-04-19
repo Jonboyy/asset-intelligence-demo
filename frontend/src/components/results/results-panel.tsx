@@ -8,10 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { OffboardingRiskResults } from "@/components/results/offboarding-risk-results"
 import { RefreshByOfficeChart } from "@/components/results/refresh-by-office-chart"
 import { RefreshTimingChart } from "@/components/results/refresh-timing-chart"
 import { ResultSummaryCards } from "@/components/results/result-summary-cards"
-import type { ChatResponse } from "@/types/chat"
+import type { ChatResponse, RefreshCandidatesData } from "@/types/chat"
 
 interface ResultsPanelProps {
   result: ChatResponse | null
@@ -29,8 +30,67 @@ function formatDays(value: number | null) {
   return `${value}d`
 }
 
+function RefreshCandidatesResults({ data }: { data: RefreshCandidatesData }) {
+  const rows = data.results
+
+  return (
+    <>
+      <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Summary
+        </p>
+        <p className="mt-2 whitespace-normal text-sm leading-6 text-slate-700 [hyphens:auto]">
+          Found <span className="font-semibold text-slate-900">{data.total_candidates}</span>{" "}
+          laptop refresh candidates within the next{" "}
+          <span className="font-semibold text-slate-900">{data.days_ahead}</span> days.
+        </p>
+      </div>
+
+      <ResultSummaryCards data={data} />
+
+      <div className="grid grid-cols-1 gap-4">
+        <RefreshByOfficeChart data={data} />
+        <RefreshTimingChart data={data} />
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-slate-200">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Office</TableHead>
+              <TableHead>Asset Tag</TableHead>
+              <TableHead>Model</TableHead>
+              <TableHead>Purchase</TableHead>
+              <TableHead>Refresh Due</TableHead>
+              <TableHead>Timing</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Condition</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.asset_tag}>
+                <TableCell>{row.office_name}</TableCell>
+                <TableCell className="font-medium">{row.asset_tag}</TableCell>
+                <TableCell>
+                  {row.manufacturer} {row.model}
+                </TableCell>
+                <TableCell>{formatDate(row.purchase_date)}</TableCell>
+                <TableCell>{formatDate(row.refresh_due_date)}</TableCell>
+                <TableCell>{formatDays(row.days_until_refresh)}</TableCell>
+                <TableCell>{row.status}</TableCell>
+                <TableCell>{row.condition}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
+  )
+}
+
 export function ResultsPanel({ result }: ResultsPanelProps) {
-  const rows = result?.data?.results ?? []
+  const data = result?.data
 
   return (
     <Card className="flex h-full min-h-0 flex-col border-slate-200/80 shadow-sm">
@@ -49,62 +109,15 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
       </CardHeader>
 
       <CardContent className="min-h-0 flex-1 space-y-4 overflow-y-auto">
-        {result?.data ? (
-          <>
-            <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Summary
-              </p>
-              <p className="mt-2 whitespace-normal text-sm leading-6 text-slate-700 [hyphens:auto]">
-                Found <span className="font-semibold text-slate-900">{result.data.total_candidates}</span>{" "}
-                laptop refresh candidates within the next{" "}
-                <span className="font-semibold text-slate-900">{result.data.days_ahead}</span> days.
-              </p>
-            </div>
-
-            <ResultSummaryCards data={result.data} />
-
-            <div className="grid grid-cols-1 gap-4">
-              <RefreshByOfficeChart data={result.data} />
-              <RefreshTimingChart data={result.data} />
-            </div>
-
-            <div className="overflow-x-auto rounded-2xl border border-slate-200">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Office</TableHead>
-                    <TableHead>Asset Tag</TableHead>
-                    <TableHead>Model</TableHead>
-                    <TableHead>Purchase</TableHead>
-                    <TableHead>Refresh Due</TableHead>
-                    <TableHead>Timing</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Condition</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows.map((row) => (
-                    <TableRow key={row.asset_tag}>
-                      <TableCell>{row.office_name}</TableCell>
-                      <TableCell className="font-medium">{row.asset_tag}</TableCell>
-                      <TableCell>
-                        {row.manufacturer} {row.model}
-                      </TableCell>
-                      <TableCell>{formatDate(row.purchase_date)}</TableCell>
-                      <TableCell>{formatDate(row.refresh_due_date)}</TableCell>
-                      <TableCell>{formatDays(row.days_until_refresh)}</TableCell>
-                      <TableCell>{row.status}</TableCell>
-                      <TableCell>{row.condition}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </>
+        {data ? (
+          data.metric === "offboarding_risk" ? (
+            <OffboardingRiskResults data={data} />
+          ) : (
+            <RefreshCandidatesResults data={data} />
+          )
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm leading-6 text-slate-500">
-            No structured result yet. Try one of the refresh-related prompts from the sidebar, such as:
+            No structured result yet. Try one of the supported prompts from the sidebar, such as:
             <div className="mt-3 rounded-xl bg-white p-3 text-slate-700">
               “Which laptops are likely due for refresh soon?”
             </div>

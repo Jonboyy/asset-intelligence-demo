@@ -29,6 +29,18 @@ class ChatService:
                 "data": data,
             }
 
+        if self._is_offboarding_risk_request(user_message):
+            data = self.analytics_service.get_offboarding_risk(db=db)
+            reply = self._build_offboarding_reply(data)
+
+            return {
+                "reply": reply,
+                "model": "local-router",
+                "mode": "analytics",
+                "task": "offboarding_risk",
+                "data": data,
+            }
+
         reply = self.llm_service.generate_reply(user_message=user_message, role=role)
 
         return {
@@ -57,6 +69,39 @@ class ChatService:
         has_refresh_term = any(term in text for term in refresh_terms)
 
         return has_laptop_term and has_refresh_term
+
+    def _is_offboarding_risk_request(self, user_message: str) -> bool:
+        text = user_message.lower()
+
+        offboarding_terms = [
+            "offboarding",
+            "terminated",
+            "former employee",
+            "former employees",
+            "left the company",
+            "ex employee",
+            "ex-employee",
+        ]
+
+        risk_terms = [
+            "risk",
+            "assigned",
+            "assignment",
+            "device",
+            "devices",
+            "asset",
+            "assets",
+            "license",
+            "licenses",
+            "software",
+            "still have",
+            "active",
+        ]
+
+        has_offboarding_term = any(term in text for term in offboarding_terms)
+        has_risk_term = any(term in text for term in risk_terms)
+
+        return has_offboarding_term and has_risk_term
 
     def _extract_days_ahead(self, user_message: str) -> int:
         text = user_message.lower()
@@ -126,4 +171,28 @@ class ChatService:
             f"Urgency: {overdue_count} candidate{'s' if overdue_count != 1 else ''} already overdue. "
             f"{urgency_text}\n\n"
             "The full list is shown in the Results panel, including summary cards, charts, and the detailed table."
+        )
+
+    def _build_offboarding_reply(self, data: dict) -> str:
+        total_risks = data["total_risks"]
+        total_active_assets = data["total_active_assets"]
+        total_active_licenses = data["total_active_licenses"]
+        high_risk_count = data["high_risk_count"]
+
+        if total_risks == 0:
+            return (
+                "Database check complete.\n\n"
+                "No offboarding risks were found. Terminated employees do not appear to have active "
+                "asset or software license assignments.\n\n"
+                "The Results panel has been updated with the structured response."
+            )
+
+        return (
+            "Database check complete.\n\n"
+            f"I found {total_risks} terminated employee{'s' if total_risks != 1 else ''} with active "
+            "asset or software license assignments.\n\n"
+            f"Exposure: {total_active_assets} active asset assignment{'s' if total_active_assets != 1 else ''} "
+            f"and {total_active_licenses} active software license assignment{'s' if total_active_licenses != 1 else ''}.\n\n"
+            f"Risk level: {high_risk_count} high-risk case{'s' if high_risk_count != 1 else ''} detected.\n\n"
+            "The full offboarding risk table is shown in the Results panel."
         )

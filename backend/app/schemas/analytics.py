@@ -32,3 +32,26 @@ class RefreshCandidatesResponse(BaseModel):
     days_ahead: int
     total_candidates: int
     results: list[RefreshCandidateRow]
+
+
+class OffboardingRiskRow(BaseModel):
+    employee_code: str
+    full_name: str
+    email: str
+    department_name: str
+    office_name: str
+    termination_date: str | None
+    active_assets_count: int
+    active_licenses_count: int
+    active_assets: str
+    active_licenses: str
+    risk_level: str
+
+
+class OffboardingRiskResponse(BaseModel):
+    metric: str
+    total_risks: int
+    total_active_assets: int
+    total_active_licenses: int
+    high_risk_count: int
+    results: list[OffboardingRiskRow]

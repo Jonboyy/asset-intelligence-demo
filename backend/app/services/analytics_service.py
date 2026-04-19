@@ -62,3 +62,112 @@ class AnalyticsService:
             "total_candidates": len(results),
             "results": results,
         }
+
+    def get_offboarding_risk(self, db: Session) -> dict:
+        query = text(
+            """
+            WITH asset_risk AS (
+                SELECT
+                    aa.employee_id,
+                    COUNT(DISTINCT aa.asset_id)::int AS active_assets_count,
+                    STRING_AGG(
+                        DISTINCT a.asset_tag || ' - ' || a.manufacturer || ' ' || a.model,
+                        ', '
+                    ) AS active_assets
+                FROM asset_assignments aa
+                JOIN assets a ON aa.asset_id = a.id
+                WHERE aa.assignment_status = 'active'
+                GROUP BY aa.employee_id
+            ),
+            license_risk AS (
+                SELECT
+                    la.employee_id,
+                    COUNT(DISTINCT la.license_id)::int AS active_licenses_count,
+                    STRING_AGG(
+                        DISTINCT sl.product_name,
+                        ', '
+                    ) AS active_licenses
+                FROM license_assignments la
+                JOIN software_licenses sl ON la.license_id = sl.id
+                WHERE la.assignment_status = 'active'
+                GROUP BY la.employee_id
+            )
+            SELECT
+                e.employee_code,
+                e.full_name,
+                e.email,
+                d.name AS department_name,
+                o.name AS office_name,
+                e.termination_date,
+                COALESCE(ar.active_assets_count, 0)::int AS active_assets_count,
+                COALESCE(lr.active_licenses_count, 0)::int AS active_licenses_count,
+                COALESCE(ar.active_assets, '') AS active_assets,
+                COALESCE(lr.active_licenses, '') AS active_licenses,
+                CASE
+                    WHEN COALESCE(ar.active_assets_count, 0) > 0
+                     AND COALESCE(lr.active_licenses_count, 0) > 0
+                        THEN 'high'
+                    WHEN COALESCE(ar.active_assets_count, 0)
+                       + COALESCE(lr.active_licenses_count, 0) >= 2
+                        THEN 'medium'
+                    ELSE 'low'
+                END AS risk_level
+            FROM employees e
+            JOIN departments d ON e.department_id = d.id
+            JOIN offices o ON e.office_id = o.id
+            LEFT JOIN asset_risk ar ON e.id = ar.employee_id
+            LEFT JOIN license_risk lr ON e.id = lr.employee_id
+            WHERE e.employment_status = 'terminated'
+              AND (
+                    COALESCE(ar.active_assets_count, 0)
+                  + COALESCE(lr.active_licenses_count, 0)
+              ) > 0
+            ORDER BY
+                CASE
+                    WHEN COALESCE(ar.active_assets_count, 0) > 0
+                     AND COALESCE(lr.active_licenses_count, 0) > 0
+                        THEN 1
+                    WHEN COALESCE(ar.active_assets_count, 0)
+                       + COALESCE(lr.active_licenses_count, 0) >= 2
+                        THEN 2
+                    ELSE 3
+                END,
+                e.termination_date ASC,
+                e.full_name ASC
+            """
+        )
+
+        rows = db.execute(query).mappings().all()
+
+        results: list[dict] = []
+        for row in rows:
+            results.append(
+                {
+                    "employee_code": row["employee_code"],
+                    "full_name": row["full_name"],
+                    "email": row["email"],
+                    "department_name": row["department_name"],
+                    "office_name": row["office_name"],
+                    "termination_date": row["termination_date"].isoformat()
+                    if row["termination_date"]
+                    else None,
+                    "active_assets_count": row["active_assets_count"],
+                    "active_licenses_count": row["active_licenses_count"],
+                    "active_assets": row["active_assets"],
+                    "active_licenses": row["active_licenses"],
+                    "risk_level": row["risk_level"],
+                }
+            )
+
+        total_active_assets = sum(row["active_assets_count"] for row in results)
+        total_active_licenses = sum(row["active_licenses_count"] for row in results)
+        high_risk_count = sum(1 for row in results if row["risk_level"] == "high")
+
+        return {
+            "metric": "offboarding_risk",
+            "total_risks": len(results),
+            "total_active_assets": total_active_assets,
+            "total_active_licenses": total_active_licenses,
+            "high_risk_count": high_risk_count,
+            "results": results,
+        }
