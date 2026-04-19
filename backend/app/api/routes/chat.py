@@ -1,9 +1,10 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from app.rate_limit import limiter
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.chat_service import ChatService
 
@@ -13,15 +14,18 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 @router.post("", response_model=ChatResponse)
+@limiter.limit("10/minute")
 def chat(
-    request: ChatRequest,
+    request: Request,
+    response: Response,
+    payload: ChatRequest,
     db: Session = Depends(get_db),
 ) -> ChatResponse:
     try:
         service = ChatService()
         result = service.handle_message(
-            user_message=request.message,
-            role=request.role,
+            user_message=payload.message,
+            role=payload.role,
             db=db,
         )
         return ChatResponse(**result)
