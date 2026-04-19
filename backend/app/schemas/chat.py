@@ -19,9 +19,20 @@ class ChatRequest(BaseModel):
     }
 
 
+class DecisionTrace(BaseModel):
+    intent: str | None = None
+    confidence: float | None = None
+    reason: str | None = None
+    selected_task: str | None = None
+    mode: str
+    model: str
+    structured_data_returned: bool
+
+
 class ChatResponse(BaseModel):
     reply: str
     model: str
     mode: str
     task: str | None = None
     data: dict[str, Any] | None = None
+    trace: DecisionTrace | None = None

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     app_debug: bool = Field(default=True, alias="APP_DEBUG")
     cors_origins: str = Field(default="http://localhost:5173", alias="CORS_ORIGINS")
 
+    postgres_host: str = Field(default="localhost", alias="POSTGRES_HOST")
     postgres_db: str = Field(alias="POSTGRES_DB")
     postgres_user: str = Field(alias="POSTGRES_USER")
     postgres_password: str = Field(alias="POSTGRES_PASSWORD")
@@ -34,7 +35,7 @@ class Settings(BaseSettings):
     def database_url(self) -> str:
         return (
             f"postgresql+psycopg://{self.postgres_user}:"
-            f"{self.postgres_password}@localhost:{self.postgres_port}/{self.postgres_db}"
+            f"{self.postgres_password}@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
 
     @property

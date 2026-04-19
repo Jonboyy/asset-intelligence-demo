@@ -7,7 +7,7 @@ import { sendChatMessage } from "@/lib/api"
 import type { ChatMessage, ChatResponse } from "@/types/chat"
 
 const initialAssistantMessage =
-  "Hello — I can help with asset lifecycle, refresh candidates, maintenance, and related analytics. The strongest demo path right now is laptop refresh analysis."
+  "Hello — I can help analyze asset lifecycle, offboarding risk, inventory data quality, and software license utilization. Ask a question or choose a demo prompt from the sidebar."
 
 function createMessage(role: "user" | "assistant", content: string): ChatMessage {
   return {
@@ -27,10 +27,13 @@ export function AssistantPage() {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [latestResult, setLatestResult] = useState<ChatResponse | null>(null)
+  const [isTraceOpen, setIsTraceOpen] = useState(false)
 
   if (!session) {
     return <Navigate to="/login" replace />
   }
+
+  const activeSession = session
 
   async function handleSendMessage(messageOverride?: string) {
     const nextMessage = (messageOverride ?? input).trim()
@@ -45,7 +48,7 @@ export function AssistantPage() {
     try {
       const response = await sendChatMessage({
         message: nextMessage,
-        role: session.role,
+        role: activeSession.role,
       })
 
       setLatestResult(response)
@@ -53,13 +56,19 @@ export function AssistantPage() {
         ...current,
         createMessage("assistant", response.reply),
       ])
-    } catch (error) {
+        } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Something went wrong."
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while processing the request."
 
+      setLatestResult(null)
       setMessages((current) => [
         ...current,
-        createMessage("assistant", `The request failed.\n\n${errorMessage}`),
+        createMessage(
+          "assistant",
+          `I couldn't complete the request.\n\n${errorMessage}`,
+        ),
       ])
     } finally {
       setIsLoading(false)
@@ -72,20 +81,22 @@ export function AssistantPage() {
   }
 
   return (
-    <main className="box-border h-svh overflow-hidden bg-slate-100 px-4 py-4 text-slate-950 md:px-6 md:py-6">
+    <main className="box-border min-h-svh bg-slate-100 px-3 py-3 text-slate-950 sm:px-4 sm:py-4 md:px-6 md:py-6 xl:h-svh xl:overflow-hidden">
       <div className="mx-auto h-full max-w-[1600px]">
         <AppShell
-          userName={session.name}
-          userTitle={session.title}
-          userRole={session.role}
+          userName={activeSession.name}
+          userTitle={activeSession.title}
+          userRole={activeSession.role}
           messages={messages}
           input={input}
           isLoading={isLoading}
           latestResult={latestResult}
+          isTraceOpen={isTraceOpen}
           onInputChange={setInput}
           onSubmit={() => void handleSendMessage()}
           onPromptSelect={(prompt) => void handleSendMessage(prompt)}
           onLogout={handleLogout}
+          onToggleTrace={() => setIsTraceOpen((current) => !current)}
         />
       </div>
     </main>

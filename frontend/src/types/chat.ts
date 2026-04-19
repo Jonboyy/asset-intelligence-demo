@@ -6,6 +6,16 @@ export interface ChatMessage {
   content: string
 }
 
+export interface DecisionTrace {
+  intent: string | null
+  confidence: number | null
+  reason: string | null
+  selected_task: string | null
+  mode: string
+  model: string
+  structured_data_returned: boolean
+}
+
 export interface RefreshCandidateRow {
   office_name: string
   asset_tag: string
@@ -19,16 +29,93 @@ export interface RefreshCandidateRow {
 }
 
 export interface RefreshCandidatesData {
-  metric: string
+  metric: "refresh_candidates"
   days_ahead: number
   total_candidates: number
   results: RefreshCandidateRow[]
 }
+
+export interface OffboardingRiskRow {
+  employee_code: string
+  full_name: string
+  email: string
+  department_name: string
+  office_name: string
+  termination_date: string | null
+  active_assets_count: number
+  active_licenses_count: number
+  active_assets: string
+  active_licenses: string
+  risk_level: string
+}
+
+export interface OffboardingRiskData {
+  metric: "offboarding_risk"
+  total_risks: number
+  total_active_assets: number
+  total_active_licenses: number
+  high_risk_count: number
+  results: OffboardingRiskRow[]
+}
+
+export interface DataQualityAuditRow {
+  asset_tag: string
+  category_name: string
+  manufacturer: string
+  model: string
+  office_name: string
+  status: string
+  condition: string
+  missing_fields: string
+  issue_count: number
+}
+
+export interface DataQualityAuditData {
+  metric: "data_quality_audit"
+  total_assets_with_issues: number
+  total_missing_fields: number
+  missing_serial_count: number
+  missing_purchase_date_count: number
+  missing_warranty_count: number
+  missing_vendor_count: number
+  results: DataQualityAuditRow[]
+}
+
+export interface LicenseUtilizationRow {
+  product_name: string
+  vendor_name: string
+  license_type: string
+  total_seats: number
+  assigned_seats: number
+  unused_seats: number
+  utilization_percent: number
+  annual_cost: number
+  annual_cost_per_seat: number
+  estimated_unused_cost: number
+  renewal_date: string | null
+}
+
+export interface LicenseUtilizationData {
+  metric: "license_utilization"
+  threshold_percent: number
+  total_products_flagged: number
+  total_unused_seats: number
+  estimated_total_unused_cost: number
+  lowest_utilization_percent: number
+  results: LicenseUtilizationRow[]
+}
+
+export type AnalyticsData =
+  | RefreshCandidatesData
+  | OffboardingRiskData
+  | DataQualityAuditData
+  | LicenseUtilizationData
 
 export interface ChatResponse {
   reply: string
   model: string
   mode: string
   task: string | null
-  data: RefreshCandidatesData | null
+  data: AnalyticsData | null
+  trace: DecisionTrace | null
 }

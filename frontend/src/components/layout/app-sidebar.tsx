@@ -22,9 +22,9 @@ interface AppSidebarProps {
 
 const demoPrompts = [
   "Which laptops are likely due for refresh soon?",
-  "Show refresh candidates due within the next 180 days.",
-  "Which laptops need replacement in the next 6 months?",
-  "List laptop refresh candidates by office.",
+  "Which terminated employees still have assigned devices or active software licenses?",
+  "Show assets with missing critical data.",
+  "Which software licenses are underutilized?",
 ]
 
 function formatRole(role: DemoUserRole) {
@@ -48,7 +48,7 @@ export function AppSidebar({
   onLogout,
 }: AppSidebarProps) {
   return (
-    <Card className="flex h-full min-h-0 flex-col border-slate-200/80 shadow-sm">
+    <Card className="flex h-auto min-h-0 flex-col border-slate-200/80 shadow-sm xl:h-full">
       <CardHeader className="space-y-3">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white">
@@ -113,7 +113,7 @@ export function AppSidebar({
 
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Suggested prompts
+                Demo prompts
               </p>
 
               <div className="space-y-2">

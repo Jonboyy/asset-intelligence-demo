@@ -3,3 +3,5 @@ openai
 pydantic-settings
 psycopg[binary]
 sqlalchemy
+pytest
+slowapi

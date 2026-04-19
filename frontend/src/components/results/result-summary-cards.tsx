@@ -1,3 +1,4 @@
+import { MetricCard } from "@/components/results/metric-card"
 import type { RefreshCandidatesData } from "@/types/chat"
 
 interface ResultSummaryCardsProps {
@@ -29,10 +30,6 @@ function getWorstTiming(data: RefreshCandidatesData) {
 }
 
 export function ResultSummaryCards({ data }: ResultSummaryCardsProps) {
-  const overdueCount = getOverdueCount(data)
-  const officeCount = getOfficeCount(data)
-  const mostUrgent = getWorstTiming(data)
-
   const cards = [
     {
       label: "Total candidates",
@@ -40,32 +37,22 @@ export function ResultSummaryCards({ data }: ResultSummaryCardsProps) {
     },
     {
       label: "Offices impacted",
-      value: String(officeCount),
+      value: String(getOfficeCount(data)),
     },
     {
       label: "Overdue",
-      value: String(overdueCount),
+      value: String(getOverdueCount(data)),
     },
     {
       label: "Most urgent",
-      value: mostUrgent,
+      value: getWorstTiming(data),
     },
   ]
 
   return (
     <div className="grid grid-cols-2 gap-3">
       {cards.map((card) => (
-        <div
-          key={card.label}
-          className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4"
-        >
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-            {card.label}
-          </p>
-          <p className="mt-2 whitespace-normal text-lg font-semibold leading-6 text-slate-900 [hyphens:auto]">
-            {card.value}
-          </p>
-        </div>
+        <MetricCard key={card.label} label={card.label} value={card.value} />
       ))}
     </div>
   )
