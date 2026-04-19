@@ -48,7 +48,33 @@ export interface OffboardingRiskData {
   results: OffboardingRiskRow[]
 }
 
-export type AnalyticsData = RefreshCandidatesData | OffboardingRiskData
+export interface DataQualityAuditRow {
+  asset_tag: string
+  category_name: string
+  manufacturer: string
+  model: string
+  office_name: string
+  status: string
+  condition: string
+  missing_fields: string
+  issue_count: number
+}
+
+export interface DataQualityAuditData {
+  metric: "data_quality_audit"
+  total_assets_with_issues: number
+  total_missing_fields: number
+  missing_serial_count: number
+  missing_purchase_date_count: number
+  missing_warranty_count: number
+  missing_vendor_count: number
+  results: DataQualityAuditRow[]
+}
+
+export type AnalyticsData =
+  | RefreshCandidatesData
+  | OffboardingRiskData
+  | DataQualityAuditData
 
 export interface ChatResponse {
   reply: string

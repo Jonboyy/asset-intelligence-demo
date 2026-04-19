@@ -41,6 +41,18 @@ class ChatService:
                 "data": data,
             }
 
+        if self._is_data_quality_request(user_message):
+            data = self.analytics_service.get_data_quality_audit(db=db)
+            reply = self._build_data_quality_reply(data)
+
+            return {
+                "reply": reply,
+                "model": "local-router",
+                "mode": "analytics",
+                "task": "data_quality_audit",
+                "data": data,
+            }
+
         reply = self.llm_service.generate_reply(user_message=user_message, role=role)
 
         return {
@@ -102,6 +114,36 @@ class ChatService:
         has_risk_term = any(term in text for term in risk_terms)
 
         return has_offboarding_term and has_risk_term
+
+    def _is_data_quality_request(self, user_message: str) -> bool:
+        text = user_message.lower()
+
+        data_quality_terms = [
+            "data quality",
+            "missing data",
+            "incomplete data",
+            "missing fields",
+            "missing critical data",
+            "audit",
+            "inventory quality",
+            "missing serial",
+            "missing purchase",
+            "missing warranty",
+            "missing vendor",
+        ]
+
+        asset_terms = [
+            "asset",
+            "assets",
+            "inventory",
+            "records",
+            "data",
+        ]
+
+        has_data_quality_term = any(term in text for term in data_quality_terms)
+        has_asset_context = any(term in text for term in asset_terms)
+
+        return has_data_quality_term and has_asset_context
 
     def _extract_days_ahead(self, user_message: str) -> int:
         text = user_message.lower()
@@ -195,4 +237,31 @@ class ChatService:
             f"and {total_active_licenses} active software license assignment{'s' if total_active_licenses != 1 else ''}.\n\n"
             f"Risk level: {high_risk_count} high-risk case{'s' if high_risk_count != 1 else ''} detected.\n\n"
             "The full offboarding risk table is shown in the Results panel."
+        )
+
+    def _build_data_quality_reply(self, data: dict) -> str:
+        total_assets = data["total_assets_with_issues"]
+        total_missing_fields = data["total_missing_fields"]
+        missing_serial = data["missing_serial_count"]
+        missing_purchase = data["missing_purchase_date_count"]
+        missing_warranty = data["missing_warranty_count"]
+        missing_vendor = data["missing_vendor_count"]
+
+        if total_assets == 0:
+            return (
+                "Database check complete.\n\n"
+                "No asset data quality issues were found for the audited fields.\n\n"
+                "The Results panel has been updated with the structured response."
+            )
+
+        return (
+            "Database check complete.\n\n"
+            f"I found {total_assets} asset record{'s' if total_assets != 1 else ''} with missing critical data.\n\n"
+            f"Total missing fields detected: {total_missing_fields}.\n\n"
+            "Issue breakdown: "
+            f"{missing_serial} missing serial number, "
+            f"{missing_purchase} missing purchase date, "
+            f"{missing_warranty} missing warranty end date, "
+            f"and {missing_vendor} missing vendor.\n\n"
+            "The full data quality audit table is shown in the Results panel."
         )

@@ -22,10 +22,10 @@ interface AppSidebarProps {
 
 const demoPrompts = [
   "Which laptops are likely due for refresh soon?",
-  "Show refresh candidates due within the next 180 days.",
   "Which terminated employees still have assigned devices or active software licenses?",
-  "Show offboarding risk.",
-  "Find former employees with active licenses.",
+  "Show assets with missing critical data.",
+  "Run a data quality audit for asset records.",
+  "Find assets missing serial number, purchase date, warranty date, or vendor.",
 ]
 
 function formatRole(role: DemoUserRole) {

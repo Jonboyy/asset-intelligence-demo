@@ -1,3 +1,14 @@
+import { useMemo } from "react"
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts"
+
 import { Badge } from "@/components/ui/badge"
 import {
   Table,
@@ -27,6 +38,81 @@ function formatRiskLabel(value: string) {
   if (value === "medium") return "Medium"
   if (value === "low") return "Low"
   return value
+}
+
+function OffboardingRiskCharts({ data }: OffboardingRiskResultsProps) {
+  const riskLevelData = useMemo(() => {
+    const counts = new Map<string, number>()
+
+    for (const row of data.results) {
+      const label = formatRiskLabel(row.risk_level)
+      counts.set(label, (counts.get(label) ?? 0) + 1)
+    }
+
+    return ["High", "Medium", "Low"]
+      .filter((level) => counts.has(level))
+      .map((level) => ({
+        level,
+        count: counts.get(level) ?? 0,
+      }))
+  }, [data.results])
+
+  const exposureData = [
+    {
+      type: "Active assets",
+      count: data.total_active_assets,
+    },
+    {
+      type: "Active licenses",
+      count: data.total_active_licenses,
+    },
+  ]
+
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="mb-4">
+          <p className="text-sm font-semibold text-slate-900">Risk level breakdown</p>
+          <p className="text-sm text-slate-500">
+            Terminated employee cases grouped by risk level.
+          </p>
+        </div>
+
+        <div className="h-64 w-full text-slate-900">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={riskLevelData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis dataKey="level" tick={{ fontSize: 12 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Bar dataKey="count" radius={[8, 8, 0, 0]} fill="currentColor" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="mb-4">
+          <p className="text-sm font-semibold text-slate-900">Active exposure</p>
+          <p className="text-sm text-slate-500">
+            Active assignments still linked to terminated employees.
+          </p>
+        </div>
+
+        <div className="h-64 w-full text-slate-900">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={exposureData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis dataKey="type" tick={{ fontSize: 12 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Bar dataKey="count" radius={[8, 8, 0, 0]} fill="currentColor" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function OffboardingRiskResults({ data }: OffboardingRiskResultsProps) {
@@ -78,6 +164,8 @@ export function OffboardingRiskResults({ data }: OffboardingRiskResultsProps) {
           </div>
         ))}
       </div>
+
+      <OffboardingRiskCharts data={data} />
 
       <div className="overflow-x-auto rounded-2xl border border-slate-200">
         <Table>

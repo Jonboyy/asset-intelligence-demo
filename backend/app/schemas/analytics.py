@@ -55,3 +55,26 @@ class OffboardingRiskResponse(BaseModel):
     total_active_licenses: int
     high_risk_count: int
     results: list[OffboardingRiskRow]
+
+
+class DataQualityAuditRow(BaseModel):
+    asset_tag: str
+    category_name: str
+    manufacturer: str
+    model: str
+    office_name: str
+    status: str
+    condition: str
+    missing_fields: str
+    issue_count: int
+
+
+class DataQualityAuditResponse(BaseModel):
+    metric: str
+    total_assets_with_issues: int
+    total_missing_fields: int
+    missing_serial_count: int
+    missing_purchase_date_count: int
+    missing_warranty_count: int
+    missing_vendor_count: int
+    results: list[DataQualityAuditRow]

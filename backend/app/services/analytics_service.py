@@ -171,3 +171,97 @@ class AnalyticsService:
             "high_risk_count": high_risk_count,
             "results": results,
         }
+
+    def get_data_quality_audit(self, db: Session) -> dict:
+        query = text(
+            """
+            SELECT
+                a.asset_tag,
+                ac.name AS category_name,
+                a.manufacturer,
+                a.model,
+                o.name AS office_name,
+                a.status,
+                a.condition,
+                CONCAT_WS(
+                    ', ',
+                    CASE
+                        WHEN a.serial_number IS NULL OR TRIM(a.serial_number) = ''
+                            THEN 'serial_number'
+                    END,
+                    CASE
+                        WHEN a.purchase_date IS NULL
+                            THEN 'purchase_date'
+                    END,
+                    CASE
+                        WHEN a.warranty_end_date IS NULL
+                            THEN 'warranty_end_date'
+                    END,
+                    CASE
+                        WHEN a.vendor_id IS NULL
+                            THEN 'vendor'
+                    END
+                ) AS missing_fields,
+                (
+                    CASE WHEN a.serial_number IS NULL OR TRIM(a.serial_number) = '' THEN 1 ELSE 0 END
+                  + CASE WHEN a.purchase_date IS NULL THEN 1 ELSE 0 END
+                  + CASE WHEN a.warranty_end_date IS NULL THEN 1 ELSE 0 END
+                  + CASE WHEN a.vendor_id IS NULL THEN 1 ELSE 0 END
+                )::int AS issue_count
+            FROM assets a
+            JOIN asset_categories ac ON a.category_id = ac.id
+            JOIN offices o ON a.office_id = o.id
+            WHERE
+                a.serial_number IS NULL
+                OR TRIM(a.serial_number) = ''
+                OR a.purchase_date IS NULL
+                OR a.warranty_end_date IS NULL
+                OR a.vendor_id IS NULL
+            ORDER BY
+                issue_count DESC,
+                a.asset_tag ASC
+            """
+        )
+
+        rows = db.execute(query).mappings().all()
+
+        results: list[dict] = []
+        for row in rows:
+            results.append(
+                {
+                    "asset_tag": row["asset_tag"],
+                    "category_name": row["category_name"],
+                    "manufacturer": row["manufacturer"],
+                    "model": row["model"],
+                    "office_name": row["office_name"],
+                    "status": row["status"],
+                    "condition": row["condition"],
+                    "missing_fields": row["missing_fields"],
+                    "issue_count": row["issue_count"],
+                }
+            )
+
+        missing_serial_count = sum(
+            1 for row in results if "serial_number" in row["missing_fields"]
+        )
+        missing_purchase_date_count = sum(
+            1 for row in results if "purchase_date" in row["missing_fields"]
+        )
+        missing_warranty_count = sum(
+            1 for row in results if "warranty_end_date" in row["missing_fields"]
+        )
+        missing_vendor_count = sum(
+            1 for row in results if "vendor" in row["missing_fields"]
+        )
+        total_missing_fields = sum(row["issue_count"] for row in results)
+
+        return {
+            "metric": "data_quality_audit",
+            "total_assets_with_issues": len(results),
+            "total_missing_fields": total_missing_fields,
+            "missing_serial_count": missing_serial_count,
+            "missing_purchase_date_count": missing_purchase_date_count,
+            "missing_warranty_count": missing_warranty_count,
+            "missing_vendor_count": missing_vendor_count,
+            "results": results,
+        }

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.schemas.analytics import (
+    DataQualityAuditResponse,
     OffboardingRiskResponse,
     RefreshCandidatesRequest,
     RefreshCandidatesResponse,
@@ -40,4 +41,19 @@ def get_offboarding_risk(
         raise HTTPException(
             status_code=500,
             detail=f"Offboarding risk request failed: {exc}",
+        ) from exc
+
+
+@router.get("/data-quality-audit", response_model=DataQualityAuditResponse)
+def get_data_quality_audit(
+    db: Session = Depends(get_db),
+) -> DataQualityAuditResponse:
+    try:
+        service = AnalyticsService()
+        result = service.get_data_quality_audit(db=db)
+        return DataQualityAuditResponse(**result)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Data quality audit request failed: {exc}",
         ) from exc
