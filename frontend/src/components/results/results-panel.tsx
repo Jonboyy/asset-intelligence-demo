@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { DataQualityResults } from "@/components/results/data-quality-results"
+import { LicenseUtilizationResults } from "@/components/results/license-utilization-results"
 import { OffboardingRiskResults } from "@/components/results/offboarding-risk-results"
 import { RefreshByOfficeChart } from "@/components/results/refresh-by-office-chart"
 import { RefreshTimingChart } from "@/components/results/refresh-timing-chart"
@@ -115,6 +116,8 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
             <OffboardingRiskResults data={data} />
           ) : data.metric === "data_quality_audit" ? (
             <DataQualityResults data={data} />
+          ) : data.metric === "license_utilization" ? (
+            <LicenseUtilizationResults data={data} />
           ) : (
             <RefreshCandidatesResults data={data} />
           )

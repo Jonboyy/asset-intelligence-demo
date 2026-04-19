@@ -71,10 +71,35 @@ export interface DataQualityAuditData {
   results: DataQualityAuditRow[]
 }
 
+export interface LicenseUtilizationRow {
+  product_name: string
+  vendor_name: string
+  license_type: string
+  total_seats: number
+  assigned_seats: number
+  unused_seats: number
+  utilization_percent: number
+  annual_cost: number
+  annual_cost_per_seat: number
+  estimated_unused_cost: number
+  renewal_date: string | null
+}
+
+export interface LicenseUtilizationData {
+  metric: "license_utilization"
+  threshold_percent: number
+  total_products_flagged: number
+  total_unused_seats: number
+  estimated_total_unused_cost: number
+  lowest_utilization_percent: number
+  results: LicenseUtilizationRow[]
+}
+
 export type AnalyticsData =
   | RefreshCandidatesData
   | OffboardingRiskData
   | DataQualityAuditData
+  | LicenseUtilizationData
 
 export interface ChatResponse {
   reply: string

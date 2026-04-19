@@ -265,3 +265,107 @@ class AnalyticsService:
             "missing_vendor_count": missing_vendor_count,
             "results": results,
         }
+
+    def get_license_utilization(self, db: Session, threshold_percent: float = 70.0) -> dict:
+        query = text(
+            """
+            WITH license_usage AS (
+                SELECT
+                    sl.id,
+                    sl.product_name,
+                    COALESCE(v.name, 'Unknown vendor') AS vendor_name,
+                    sl.license_type,
+                    sl.total_seats,
+                    sl.annual_cost,
+                    sl.renewal_date,
+                    COUNT(la.id)::int AS assigned_seats
+                FROM software_licenses sl
+                LEFT JOIN vendors v ON sl.vendor_id = v.id
+                LEFT JOIN license_assignments la
+                    ON sl.id = la.license_id
+                   AND la.assignment_status = 'active'
+                WHERE sl.is_active = true
+                GROUP BY
+                    sl.id,
+                    sl.product_name,
+                    v.name,
+                    sl.license_type,
+                    sl.total_seats,
+                    sl.annual_cost,
+                    sl.renewal_date
+            )
+            SELECT
+                product_name,
+                vendor_name,
+                license_type,
+                total_seats,
+                assigned_seats,
+                (total_seats - assigned_seats)::int AS unused_seats,
+                CASE
+                    WHEN total_seats = 0 THEN 0
+                    ELSE ROUND((assigned_seats::numeric / total_seats::numeric) * 100, 1)
+                END AS utilization_percent,
+                annual_cost,
+                CASE
+                    WHEN total_seats = 0 THEN 0
+                    ELSE ROUND(annual_cost / total_seats, 2)
+                END AS annual_cost_per_seat,
+                CASE
+                    WHEN total_seats = 0 THEN 0
+                    ELSE ROUND((annual_cost / total_seats) * (total_seats - assigned_seats), 2)
+                END AS estimated_unused_cost,
+                renewal_date
+            FROM license_usage
+            WHERE
+                total_seats > 0
+                AND (
+                    CASE
+                        WHEN total_seats = 0 THEN 0
+                        ELSE (assigned_seats::numeric / total_seats::numeric) * 100
+                    END
+                ) <= :threshold_percent
+            ORDER BY
+                estimated_unused_cost DESC,
+                utilization_percent ASC,
+                product_name ASC
+            """
+        )
+
+        rows = db.execute(query, {"threshold_percent": threshold_percent}).mappings().all()
+
+        results: list[dict] = []
+        for row in rows:
+            results.append(
+                {
+                    "product_name": row["product_name"],
+                    "vendor_name": row["vendor_name"],
+                    "license_type": row["license_type"],
+                    "total_seats": row["total_seats"],
+                    "assigned_seats": row["assigned_seats"],
+                    "unused_seats": row["unused_seats"],
+                    "utilization_percent": float(row["utilization_percent"]),
+                    "annual_cost": float(row["annual_cost"]),
+                    "annual_cost_per_seat": float(row["annual_cost_per_seat"]),
+                    "estimated_unused_cost": float(row["estimated_unused_cost"]),
+                    "renewal_date": row["renewal_date"].isoformat() if row["renewal_date"] else None,
+                }
+            )
+
+        total_unused_seats = sum(row["unused_seats"] for row in results)
+        estimated_total_unused_cost = round(
+            sum(row["estimated_unused_cost"] for row in results),
+            2,
+        )
+        lowest_utilization_percent = (
+            min(row["utilization_percent"] for row in results) if results else 0
+        )
+
+        return {
+            "metric": "license_utilization",
+            "threshold_percent": threshold_percent,
+            "total_products_flagged": len(results),
+            "total_unused_seats": total_unused_seats,
+            "estimated_total_unused_cost": estimated_total_unused_cost,
+            "lowest_utilization_percent": lowest_utilization_percent,
+            "results": results,
+        }

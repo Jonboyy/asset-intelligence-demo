@@ -24,8 +24,8 @@ const demoPrompts = [
   "Which laptops are likely due for refresh soon?",
   "Which terminated employees still have assigned devices or active software licenses?",
   "Show assets with missing critical data.",
-  "Run a data quality audit for asset records.",
-  "Find assets missing serial number, purchase date, warranty date, or vendor.",
+  "Which software licenses are underutilized?",
+  "Find unused software license seats and estimated waste.",
 ]
 
 function formatRole(role: DemoUserRole) {

@@ -78,3 +78,27 @@ class DataQualityAuditResponse(BaseModel):
     missing_warranty_count: int
     missing_vendor_count: int
     results: list[DataQualityAuditRow]
+
+
+class LicenseUtilizationRow(BaseModel):
+    product_name: str
+    vendor_name: str
+    license_type: str
+    total_seats: int
+    assigned_seats: int
+    unused_seats: int
+    utilization_percent: float
+    annual_cost: float
+    annual_cost_per_seat: float
+    estimated_unused_cost: float
+    renewal_date: str | None
+
+
+class LicenseUtilizationResponse(BaseModel):
+    metric: str
+    threshold_percent: float
+    total_products_flagged: int
+    total_unused_seats: int
+    estimated_total_unused_cost: float
+    lowest_utilization_percent: float
+    results: list[LicenseUtilizationRow]

@@ -53,6 +53,18 @@ class ChatService:
                 "data": data,
             }
 
+        if self._is_license_utilization_request(user_message):
+            data = self.analytics_service.get_license_utilization(db=db)
+            reply = self._build_license_utilization_reply(data)
+
+            return {
+                "reply": reply,
+                "model": "local-router",
+                "mode": "analytics",
+                "task": "license_utilization",
+                "data": data,
+            }
+
         reply = self.llm_service.generate_reply(user_message=user_message, role=role)
 
         return {
@@ -144,6 +156,36 @@ class ChatService:
         has_asset_context = any(term in text for term in asset_terms)
 
         return has_data_quality_term and has_asset_context
+
+    def _is_license_utilization_request(self, user_message: str) -> bool:
+        text = user_message.lower()
+
+        license_terms = [
+            "license",
+            "licenses",
+            "software license",
+            "software licenses",
+            "seats",
+            "subscriptions",
+        ]
+
+        utilization_terms = [
+            "underutilized",
+            "underused",
+            "unused",
+            "low utilization",
+            "utilization",
+            "waste",
+            "cost",
+            "saving",
+            "savings",
+            "overspend",
+        ]
+
+        has_license_term = any(term in text for term in license_terms)
+        has_utilization_term = any(term in text for term in utilization_terms)
+
+        return has_license_term and has_utilization_term
 
     def _extract_days_ahead(self, user_message: str) -> int:
         text = user_message.lower()
@@ -264,4 +306,28 @@ class ChatService:
             f"{missing_warranty} missing warranty end date, "
             f"and {missing_vendor} missing vendor.\n\n"
             "The full data quality audit table is shown in the Results panel."
+        )
+
+    def _build_license_utilization_reply(self, data: dict) -> str:
+        total_products = data["total_products_flagged"]
+        total_unused_seats = data["total_unused_seats"]
+        estimated_unused_cost = data["estimated_total_unused_cost"]
+        threshold = data["threshold_percent"]
+        lowest_utilization = data["lowest_utilization_percent"]
+
+        if total_products == 0:
+            return (
+                "Database check complete.\n\n"
+                f"No software products were found below the {threshold}% utilization threshold.\n\n"
+                "The Results panel has been updated with the structured response."
+            )
+
+        return (
+            "Database check complete.\n\n"
+            f"I found {total_products} software product{'s' if total_products != 1 else ''} below "
+            f"the {threshold}% utilization threshold.\n\n"
+            f"Potential waste: {total_unused_seats} unused seat{'s' if total_unused_seats != 1 else ''} "
+            f"with an estimated annual unused cost of €{estimated_unused_cost:,.2f}.\n\n"
+            f"Lowest utilization detected: {lowest_utilization}%.\n\n"
+            "The full license utilization table is shown in the Results panel."
         )

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.schemas.analytics import (
     DataQualityAuditResponse,
+    LicenseUtilizationResponse,
     OffboardingRiskResponse,
     RefreshCandidatesRequest,
     RefreshCandidatesResponse,
@@ -56,4 +57,19 @@ def get_data_quality_audit(
         raise HTTPException(
             status_code=500,
             detail=f"Data quality audit request failed: {exc}",
+        ) from exc
+
+
+@router.get("/license-utilization", response_model=LicenseUtilizationResponse)
+def get_license_utilization(
+    db: Session = Depends(get_db),
+) -> LicenseUtilizationResponse:
+    try:
+        service = AnalyticsService()
+        result = service.get_license_utilization(db=db)
+        return LicenseUtilizationResponse(**result)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"License utilization request failed: {exc}",
         ) from exc
