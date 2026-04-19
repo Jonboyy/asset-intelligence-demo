@@ -75,7 +75,7 @@ export function AssistantPage() {
   }
 
   return (
-    <main className="box-border h-svh overflow-hidden bg-slate-100 px-4 py-4 text-slate-950 md:px-6 md:py-6">
+    <main className="box-border min-h-svh bg-slate-100 px-3 py-3 text-slate-950 sm:px-4 sm:py-4 md:px-6 md:py-6 xl:h-svh xl:overflow-hidden">
       <div className="mx-auto h-full max-w-[1600px]">
         <AppShell
           userName={activeSession.name}

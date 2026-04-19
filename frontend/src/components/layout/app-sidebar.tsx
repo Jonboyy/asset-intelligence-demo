@@ -48,7 +48,7 @@ export function AppSidebar({
   onLogout,
 }: AppSidebarProps) {
   return (
-    <Card className="flex h-full min-h-0 flex-col border-slate-200/80 shadow-sm">
+    <Card className="flex h-auto min-h-0 flex-col border-slate-200/80 shadow-sm xl:h-full">
       <CardHeader className="space-y-3">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white">

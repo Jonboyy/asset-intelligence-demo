@@ -36,7 +36,7 @@ export function AppShell({
   onToggleTrace,
 }: AppShellProps) {
   return (
-    <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_500px]">
+    <div className="flex min-h-0 flex-col gap-4 xl:grid xl:h-full xl:grid-cols-[320px_minmax(0,1fr)_500px]">
       <AppSidebar
         userName={userName}
         userTitle={userTitle}

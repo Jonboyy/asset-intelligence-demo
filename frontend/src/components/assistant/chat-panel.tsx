@@ -42,10 +42,10 @@ export function ChatPanel({
   const trace = latestResult?.trace ?? null
 
   return (
-    <Card className="flex h-full min-h-0 flex-col border-slate-200/80 shadow-sm">
+    <Card className="flex h-[78svh] min-h-[520px] flex-col border-slate-200/80 shadow-sm xl:h-full xl:min-h-0">
       <CardHeader className="space-y-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
             <CardTitle className="text-base">Assistant</CardTitle>
             <Button
               type="button"
@@ -58,7 +58,9 @@ export function ChatPanel({
             </Button>
           </div>
 
-          <Badge variant="outline">Database-aware routing enabled</Badge>
+          <Badge variant="outline" className="w-fit">
+            Database-aware routing enabled
+          </Badge>
         </div>
 
         <p className="text-sm text-slate-500">
@@ -69,7 +71,7 @@ export function ChatPanel({
 
       <CardContent className="relative flex min-h-0 flex-1 flex-col gap-4">
         {isTraceOpen ? (
-          <div className="absolute inset-x-6 top-0 z-20 max-h-[50%] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-lg">
+          <div className="absolute inset-x-4 top-0 z-20 max-h-[50%] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-lg sm:inset-x-6">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-slate-900">
@@ -84,7 +86,7 @@ export function ChatPanel({
 
             {trace ? (
               <div className="grid gap-3 text-sm">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Intent
@@ -168,7 +170,7 @@ export function ChatPanel({
                   )}
 
                   <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${
+                    className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm sm:max-w-[85%] ${
                       isAssistant
                         ? "border border-slate-200 bg-white text-slate-800"
                         : "bg-slate-900 text-white"
@@ -205,7 +207,7 @@ export function ChatPanel({
           <Input
             value={input}
             onChange={(event) => onInputChange(event.target.value)}
-            placeholder="Ask about refresh candidates, maintenance, or inventory risk…"
+            placeholder="Ask about assets, licenses, or risk…"
             disabled={isLoading}
           />
           <Button type="submit" disabled={isLoading || !input.trim()}>

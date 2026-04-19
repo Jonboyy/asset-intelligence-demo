@@ -95,7 +95,7 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
   const data = result?.data
 
   return (
-    <Card className="flex h-full min-h-0 flex-col border-slate-200/80 shadow-sm">
+    <Card className="flex h-auto min-h-[520px] flex-col border-slate-200/80 shadow-sm xl:h-full xl:min-h-0">
       <CardHeader className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-base">Results</CardTitle>
@@ -110,7 +110,7 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
         </p>
       </CardHeader>
 
-      <CardContent className="min-h-0 flex-1 space-y-4 overflow-y-auto">
+      <CardContent className="min-h-0 flex-1 space-y-4 overflow-visible xl:overflow-y-auto">
         {data ? (
           data.metric === "offboarding_risk" ? (
             <OffboardingRiskResults data={data} />
