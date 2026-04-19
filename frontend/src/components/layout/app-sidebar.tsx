@@ -25,7 +25,6 @@ const demoPrompts = [
   "Which terminated employees still have assigned devices or active software licenses?",
   "Show assets with missing critical data.",
   "Which software licenses are underutilized?",
-  "Find unused software license seats and estimated waste.",
 ]
 
 function formatRole(role: DemoUserRole) {
@@ -114,7 +113,7 @@ export function AppSidebar({
 
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Suggested prompts
+                Demo prompts
               </p>
 
               <div className="space-y-2">

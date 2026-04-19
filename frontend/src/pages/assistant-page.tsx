@@ -7,7 +7,7 @@ import { sendChatMessage } from "@/lib/api"
 import type { ChatMessage, ChatResponse } from "@/types/chat"
 
 const initialAssistantMessage =
-  "Hello — I can help with asset lifecycle, refresh candidates, maintenance, and related analytics. The strongest demo path right now is laptop refresh analysis."
+  "Hello — I can help analyze asset lifecycle, offboarding risk, inventory data quality, and software license utilization. Ask a question or choose a demo prompt from the sidebar."
 
 function createMessage(role: "user" | "assistant", content: string): ChatMessage {
   return {

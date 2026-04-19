@@ -312,13 +312,7 @@ class ChatService:
         return 180
 
     def _classification_note(self, classification: dict[str, Any]) -> str:
-        confidence = classification.get("confidence", 0)
-        reason = classification.get("reason", "No reason provided.")
-
-        return (
-            f"\n\nAI routing: classified with {confidence:.0%} confidence. "
-            f"Reason: {reason}"
-        )
+        return ""
 
     def _build_refresh_reply(self, data: dict, classification: dict[str, Any]) -> str:
         total = data["total_candidates"]
