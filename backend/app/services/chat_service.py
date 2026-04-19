@@ -1,5 +1,6 @@
 import re
 from collections import Counter
+from typing import Any
 
 from sqlalchemy.orm import Session
 
@@ -13,56 +14,103 @@ class ChatService:
         self.llm_service = OpenAIService()
 
     def handle_message(self, user_message: str, role: str, db: Session) -> dict:
-        if self._is_refresh_candidates_request(user_message):
+        classification = self._classify_or_fallback(user_message=user_message, role=role)
+        intent = classification["intent"]
+
+        if intent == "refresh_candidates":
             days_ahead = self._extract_days_ahead(user_message)
             data = self.analytics_service.get_refresh_candidates(
                 db=db,
                 days_ahead=days_ahead,
             )
-            reply = self._build_refresh_reply(data)
+            reply = self._build_refresh_reply(data, classification)
 
             return {
                 "reply": reply,
-                "model": "local-router",
+                "model": f"intent-classifier:{self.llm_service.model}",
                 "mode": "analytics",
                 "task": "refresh_candidates",
                 "data": data,
             }
 
-        if self._is_offboarding_risk_request(user_message):
+        if intent == "offboarding_risk":
             data = self.analytics_service.get_offboarding_risk(db=db)
-            reply = self._build_offboarding_reply(data)
+            reply = self._build_offboarding_reply(data, classification)
 
             return {
                 "reply": reply,
-                "model": "local-router",
+                "model": f"intent-classifier:{self.llm_service.model}",
                 "mode": "analytics",
                 "task": "offboarding_risk",
                 "data": data,
             }
 
-        if self._is_data_quality_request(user_message):
+        if intent == "data_quality_audit":
             data = self.analytics_service.get_data_quality_audit(db=db)
-            reply = self._build_data_quality_reply(data)
+            reply = self._build_data_quality_reply(data, classification)
 
             return {
                 "reply": reply,
-                "model": "local-router",
+                "model": f"intent-classifier:{self.llm_service.model}",
                 "mode": "analytics",
                 "task": "data_quality_audit",
                 "data": data,
             }
 
-        if self._is_license_utilization_request(user_message):
+        if intent == "license_utilization":
             data = self.analytics_service.get_license_utilization(db=db)
-            reply = self._build_license_utilization_reply(data)
+            reply = self._build_license_utilization_reply(data, classification)
 
             return {
                 "reply": reply,
-                "model": "local-router",
+                "model": f"intent-classifier:{self.llm_service.model}",
                 "mode": "analytics",
                 "task": "license_utilization",
                 "data": data,
+            }
+
+        if intent == "clarification_needed":
+            question = classification.get("clarifying_question") or (
+                "Could you clarify which asset intelligence area you want to analyze?"
+            )
+
+            return {
+                "reply": (
+                    "I need one clarification before running an analysis.\n\n"
+                    f"{question}\n\n"
+                    "Supported areas include refresh candidates, offboarding risk, data quality audit, "
+                    "and software license utilization."
+                ),
+                "model": f"intent-classifier:{self.llm_service.model}",
+                "mode": "clarification",
+                "task": "clarification_needed",
+                "data": None,
+            }
+
+        if intent == "unsupported":
+            return {
+                "reply": (
+                    "I understand the request is related to asset intelligence, but this specific analysis "
+                    "is not supported in the demo yet.\n\n"
+                    "Supported tasks are refresh candidates, offboarding risk, data quality audit, "
+                    "and software license utilization."
+                ),
+                "model": f"intent-classifier:{self.llm_service.model}",
+                "mode": "unsupported",
+                "task": "unsupported",
+                "data": None,
+            }
+
+        if intent == "out_of_scope":
+            return {
+                "reply": (
+                    "I can’t help with that request because this assistant is limited to company asset, "
+                    "inventory, warranty, maintenance, offboarding, and software license analytics."
+                ),
+                "model": f"intent-classifier:{self.llm_service.model}",
+                "mode": "out_of_scope",
+                "task": "out_of_scope",
+                "data": None,
             }
 
         reply = self.llm_service.generate_reply(user_message=user_message, role=role)
@@ -75,10 +123,67 @@ class ChatService:
             "data": None,
         }
 
+    def _classify_or_fallback(self, user_message: str, role: str) -> dict[str, Any]:
+        try:
+            classification = self.llm_service.classify_intent(
+                user_message=user_message,
+                role=role,
+            )
+
+            if classification["confidence"] >= 0.55:
+                return classification
+        except Exception:
+            pass
+
+        return self._heuristic_classification(user_message)
+
+    def _heuristic_classification(self, user_message: str) -> dict[str, Any]:
+        if self._is_refresh_candidates_request(user_message):
+            return {
+                "intent": "refresh_candidates",
+                "confidence": 0.7,
+                "reason": "Fallback routing matched laptop/device refresh terms.",
+                "clarifying_question": None,
+            }
+
+        if self._is_offboarding_risk_request(user_message):
+            return {
+                "intent": "offboarding_risk",
+                "confidence": 0.7,
+                "reason": "Fallback routing matched offboarding and assignment terms.",
+                "clarifying_question": None,
+            }
+
+        if self._is_data_quality_request(user_message):
+            return {
+                "intent": "data_quality_audit",
+                "confidence": 0.7,
+                "reason": "Fallback routing matched data quality terms.",
+                "clarifying_question": None,
+            }
+
+        if self._is_license_utilization_request(user_message):
+            return {
+                "intent": "license_utilization",
+                "confidence": 0.7,
+                "reason": "Fallback routing matched software license utilization terms.",
+                "clarifying_question": None,
+            }
+
+        return {
+            "intent": "clarification_needed",
+            "confidence": 0.5,
+            "reason": "Fallback routing could not confidently select a task.",
+            "clarifying_question": (
+                "Do you want to analyze refresh candidates, offboarding risk, data quality, "
+                "or software license utilization?"
+            ),
+        }
+
     def _is_refresh_candidates_request(self, user_message: str) -> bool:
         text = user_message.lower()
 
-        laptop_terms = ["laptop", "laptops", "notebook", "notebooks"]
+        laptop_terms = ["laptop", "laptops", "notebook", "notebooks", "device", "devices"]
         refresh_terms = [
             "refresh",
             "replace",
@@ -87,6 +192,7 @@ class ChatService:
             "renew",
             "upgrade",
             "swap",
+            "lifecycle",
         ]
 
         has_laptop_term = any(term in text for term in laptop_terms)
@@ -167,6 +273,7 @@ class ChatService:
             "software licenses",
             "seats",
             "subscriptions",
+            "subscription",
         ]
 
         utilization_terms = [
@@ -204,7 +311,16 @@ class ChatService:
 
         return 180
 
-    def _build_refresh_reply(self, data: dict) -> str:
+    def _classification_note(self, classification: dict[str, Any]) -> str:
+        confidence = classification.get("confidence", 0)
+        reason = classification.get("reason", "No reason provided.")
+
+        return (
+            f"\n\nAI routing: classified with {confidence:.0%} confidence. "
+            f"Reason: {reason}"
+        )
+
+    def _build_refresh_reply(self, data: dict, classification: dict[str, Any]) -> str:
         total = data["total_candidates"]
         days_ahead = data["days_ahead"]
         results = data["results"]
@@ -212,8 +328,8 @@ class ChatService:
         if total == 0:
             return (
                 "Database check complete.\n\n"
-                f"No laptop refresh candidates were found within the next {days_ahead} days.\n\n"
-                "The Results panel has been updated with the structured response."
+                f"No laptop refresh candidates were found within the next {days_ahead} days."
+                + self._classification_note(classification)
             )
 
         office_counts = Counter(row["office_name"] for row in results)
@@ -254,10 +370,11 @@ class ChatService:
             f"Office impact: {office_summary}.\n\n"
             f"Urgency: {overdue_count} candidate{'s' if overdue_count != 1 else ''} already overdue. "
             f"{urgency_text}\n\n"
-            "The full list is shown in the Results panel, including summary cards, charts, and the detailed table."
+            "The full list is shown in the Results panel."
+            + self._classification_note(classification)
         )
 
-    def _build_offboarding_reply(self, data: dict) -> str:
+    def _build_offboarding_reply(self, data: dict, classification: dict[str, Any]) -> str:
         total_risks = data["total_risks"]
         total_active_assets = data["total_active_assets"]
         total_active_licenses = data["total_active_licenses"]
@@ -267,8 +384,8 @@ class ChatService:
             return (
                 "Database check complete.\n\n"
                 "No offboarding risks were found. Terminated employees do not appear to have active "
-                "asset or software license assignments.\n\n"
-                "The Results panel has been updated with the structured response."
+                "asset or software license assignments."
+                + self._classification_note(classification)
             )
 
         return (
@@ -279,9 +396,10 @@ class ChatService:
             f"and {total_active_licenses} active software license assignment{'s' if total_active_licenses != 1 else ''}.\n\n"
             f"Risk level: {high_risk_count} high-risk case{'s' if high_risk_count != 1 else ''} detected.\n\n"
             "The full offboarding risk table is shown in the Results panel."
+            + self._classification_note(classification)
         )
 
-    def _build_data_quality_reply(self, data: dict) -> str:
+    def _build_data_quality_reply(self, data: dict, classification: dict[str, Any]) -> str:
         total_assets = data["total_assets_with_issues"]
         total_missing_fields = data["total_missing_fields"]
         missing_serial = data["missing_serial_count"]
@@ -292,8 +410,8 @@ class ChatService:
         if total_assets == 0:
             return (
                 "Database check complete.\n\n"
-                "No asset data quality issues were found for the audited fields.\n\n"
-                "The Results panel has been updated with the structured response."
+                "No asset data quality issues were found for the audited fields."
+                + self._classification_note(classification)
             )
 
         return (
@@ -306,9 +424,10 @@ class ChatService:
             f"{missing_warranty} missing warranty end date, "
             f"and {missing_vendor} missing vendor.\n\n"
             "The full data quality audit table is shown in the Results panel."
+            + self._classification_note(classification)
         )
 
-    def _build_license_utilization_reply(self, data: dict) -> str:
+    def _build_license_utilization_reply(self, data: dict, classification: dict[str, Any]) -> str:
         total_products = data["total_products_flagged"]
         total_unused_seats = data["total_unused_seats"]
         estimated_unused_cost = data["estimated_total_unused_cost"]
@@ -318,8 +437,8 @@ class ChatService:
         if total_products == 0:
             return (
                 "Database check complete.\n\n"
-                f"No software products were found below the {threshold}% utilization threshold.\n\n"
-                "The Results panel has been updated with the structured response."
+                f"No software products were found below the {threshold}% utilization threshold."
+                + self._classification_note(classification)
             )
 
         return (
@@ -330,4 +449,5 @@ class ChatService:
             f"with an estimated annual unused cost of €{estimated_unused_cost:,.2f}.\n\n"
             f"Lowest utilization detected: {lowest_utilization}%.\n\n"
             "The full license utilization table is shown in the Results panel."
+            + self._classification_note(classification)
         )
