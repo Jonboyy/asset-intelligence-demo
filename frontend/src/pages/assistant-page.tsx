@@ -32,6 +32,8 @@ export function AssistantPage() {
     return <Navigate to="/login" replace />
   }
 
+  const activeSession = session
+
   async function handleSendMessage(messageOverride?: string) {
     const nextMessage = (messageOverride ?? input).trim()
     if (!nextMessage || isLoading) return
@@ -45,7 +47,7 @@ export function AssistantPage() {
     try {
       const response = await sendChatMessage({
         message: nextMessage,
-        role: session.role,
+        role: activeSession.role,
       })
 
       setLatestResult(response)
@@ -75,9 +77,9 @@ export function AssistantPage() {
     <main className="box-border h-svh overflow-hidden bg-slate-100 px-4 py-4 text-slate-950 md:px-6 md:py-6">
       <div className="mx-auto h-full max-w-[1600px]">
         <AppShell
-          userName={session.name}
-          userTitle={session.title}
-          userRole={session.role}
+          userName={activeSession.name}
+          userTitle={activeSession.title}
+          userRole={activeSession.role}
           messages={messages}
           input={input}
           isLoading={isLoading}
