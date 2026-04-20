@@ -40,47 +40,47 @@ The data is fictional, but designed to resemble realistic internal company data 
 
 1. Laptop Refresh Candidates
 
-Find laptops that are due or nearly due for replacement.
+   Find laptops that are due or nearly due for replacement.
 
-Uses:
+   Uses:
 
- - assets
- - asset categories
- - offices
+   - assets
+   - asset categories
+   - offices
 
 2. Offboarding Risk
 
-Find terminated employees who still have active devices or software licenses assigned.
+   Find terminated employees who still have active devices or software licenses assigned.
 
-Uses:
+   Uses:
 
- - employees
- - departments
- - offices
- - assets
- - asset assignments
- - software licenses
- - license assignments
+   - employees
+   - departments
+   - offices
+   - assets
+   - asset assignments
+   - software licenses
+   - license assignments
 
 3. Data Quality Audit
 
-Find asset records missing important fields like serial number, purchase date, warranty date, or vendor.
+   Find asset records missing important fields like serial number, purchase date, warranty date, or vendor.
 
-Uses:
+   Uses:
 
- - assets
- - asset categories
- - offices
+   - assets
+   - asset categories
+   - offices
 
 4. License Utilization
 
-Find underused software licenses and estimate unused annual cost.
+   Find underused software licenses and estimate unused annual cost.
 
-Uses:
+   Uses:
 
- - software licenses
- - vendors
- - license assignments
+   - software licenses
+   - vendors
+   - license assignments
 
 ## Tech Stack
 
@@ -131,60 +131,75 @@ If the AI provider is unavailable or rate-limited, the backend falls back to det
 
 1. Open:
 
-https://asset-intelligence-demo.vercel.app
+   https://asset-intelligence-demo.vercel.app
 
 2. Log in with one of the demo accounts and try one of the demo prompts.
 
-#### Demo Login
+   #### Demo Login
 
-All demo accounts use:
+   All demo accounts use:
+   
+   ```
+   Password: demo123
+   ```
 
-Password: demo123
+   Available users:
 
-Available users:
+   ```
+   asset.manager@nordaxis.demo
 
-asset.manager@nordaxis.demo
-it.manager@nordaxis.demo
-operations.manager@nordaxis.demo
+   it.manager@nordaxis.demo
+
+   operations.manager@nordaxis.demo
+   ```
 
 ### Option 2: Run Locally with Docker Compose
 
 1. Clone the repo:
 
-git clone https://github.com/Jonboyy/asset-intelligence-demo.git
-cd asset-intelligence-demo
+   ```bash
+   git clone https://github.com/Jonboyy/asset-intelligence-demo.git
+   ```
+
+   ```bash
+   cd asset-intelligence-demo
+   ```
 
 2. Create a root .env file based on .env.example. and add your API keys.
 
-Example:
+   Example:
 
-POSTGRES_HOST=localhost
-POSTGRES_DB=asset_intelligence
-POSTGRES_USER=asset_admin
-POSTGRES_PASSWORD=asset_admin_dev
-POSTGRES_PORT=5433
-
-LLM_PROVIDER=openrouter
-LLM_API_KEY=your_api_key_here
-LLM_MODEL=openrouter/free
-LLM_BASE_URL=https://openrouter.ai/api/v1
-
-APP_ENV=development
-APP_NAME=Asset Intelligence Assistant API
-APP_DEBUG=true
-CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+   ```env
+   POSTGRES_HOST=localhost
+   POSTGRES_DB=asset_intelligence
+   POSTGRES_USER=asset_admin
+   POSTGRES_PASSWORD=asset_admin_dev
+   POSTGRES_PORT=5433
+   
+   LLM_PROVIDER=openrouter
+   LLM_API_KEY=your_api_key_here
+   LLM_MODEL=openrouter/free
+   LLM_BASE_URL=https://openrouter.ai/api/v1
+   
+   APP_ENV=development
+   APP_NAME=Asset Intelligence Assistant API
+   APP_DEBUG=true
+   CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+   ```
 
 3. Start the full stack:
 
-docker compose up --build
+   ```bash
+   docker compose up --build
+   ```
 
 4. Open the frontend:
 
-http://localhost:5173
+   http://localhost:5173
 
-Optional: Inspect the backend API docs:
+   Optional: Inspect the backend API docs:
 
-http://localhost:8000/docs
+   http://localhost:8000/docs
 
 5. Log in with one of the demo accounts and try one of the demo prompts. See demo login help above.
 
@@ -192,9 +207,11 @@ http://localhost:8000/docs
 
 Backend tests use pytest.
 
+```bash
 cd backend
 source .venv/bin/activate
 pytest -q
+```
 
 ## Deployment
 
@@ -208,15 +225,19 @@ Main deployment environment variables:
 
 Backend:
 
+```env
 DATABASE_URL=your_supabase_database_url
 LLM_API_KEY=your_api_key
 LLM_MODEL=your_model
 LLM_BASE_URL=your_provider_base_url
 CORS_ORIGINS=https://asset-intelligence-demo.vercel.app
+```
 
 Frontend:
 
+```env
 VITE_API_BASE_URL=your_render_backend_url
+```
 
 ## Notes
 
