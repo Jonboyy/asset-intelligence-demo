@@ -25,7 +25,7 @@ export function LoginForm({
       <Card className="border-slate-200/80 shadow-sm">
         <CardHeader className="space-y-4">
           <div className="space-y-2">
-            <Badge variant="secondary">Hiring Demo</Badge>
+            <Badge variant="secondary">Demo</Badge>
             <CardTitle className="text-2xl">Asset Intelligence Assistant</CardTitle>
             <p className="max-w-2xl text-sm leading-6 text-slate-600">
               An internal analytics assistant for asset lifecycle, maintenance,
