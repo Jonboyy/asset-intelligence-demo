@@ -127,7 +127,7 @@ If the AI provider is unavailable or rate-limited, the backend falls back to det
 
 ## How to Use
 
-### Option 1: Use the Live App
+### Option 1: Use the Live App (not available now)
 
 1. Open:
 
